@@ -12,6 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
+
 rootProject.name = "PillApp"
-include ':app'
-include ':sdk'
+include(":app")
+include(":sdk")
