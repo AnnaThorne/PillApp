@@ -24,7 +24,8 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - run: java --version
-      - run: echo "The workflow is now ready to test your code."
+      - run: env
+      - run: echo "Ready to build."
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - run: echo "Building Debug APK."
