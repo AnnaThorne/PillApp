@@ -23,6 +23,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+      - run: java --version
       - run: echo "The workflow is now ready to test your code."
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
