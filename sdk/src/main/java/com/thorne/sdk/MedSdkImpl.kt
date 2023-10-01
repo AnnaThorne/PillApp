@@ -1,13 +1,26 @@
 package com.thorne.sdk
 
+import android.annotation.SuppressLint
+import android.content.Context
 import com.thorne.sdk.meds.Medication
+import com.thorne.sdk.storage.MedicationStorageManagerImpl
 
 class MedSdkImpl private constructor() : MedSdk {
-
+    ///////////////////////////////////////////////////////////////////////////
+    // variables
+    ///////////////////////////////////////////////////////////////////////////
     companion object {
         // Private reference to the singleton instance
+
+        // Suppress warning because we're only ever storing application context
+        @SuppressLint("StaticFieldLeak")
+
         @Volatile
         private var INSTANCE: MedSdkImpl? = null
+
+        private var isInitialized = false
+        private var medicationList = ArrayList<Medication>()
+        private val storageManager = MedicationStorageManagerImpl()
 
         // Function to get or create the singleton instance
         fun getInstance(): MedSdkImpl {
@@ -17,31 +30,70 @@ class MedSdkImpl private constructor() : MedSdk {
         }
     }
 
-    override fun initialize() {
-        TODO("Not yet implemented")
+    private var context: Context? = null
+
+    ///////////////////////////////////////////////////////////////////////////
+    // public functions
+    ///////////////////////////////////////////////////////////////////////////
+    override fun initialize(context: Context) {
+        this.context = context.applicationContext
+        loadFromStorage()
+        isInitialized = true
+    }
+
+    override fun isInitialized(): Boolean {
+        return isInitialized
     }
 
     override fun addMedication(medication: Medication) {
-        TODO("Not yet implemented")
+        assertInitialized()
+        medicationList.add(medication)
+        updateStorage()
     }
 
     override fun removeMedication(medication: Medication) {
-        TODO("Not yet implemented")
+        assertInitialized()
+        medicationList.remove(medication)
+        updateStorage()
     }
 
     override fun removeMedication(id: String) {
-        TODO("Not yet implemented")
+        assertInitialized()
+        medicationList.removeIf { it.getId() == id }
+        updateStorage()
     }
 
     override fun getMedicationById(id: String): Medication {
-        TODO("Not yet implemented")
+        assertInitialized()
+        return medicationList.find { it.getId() == id }!!
     }
 
-    override fun getMedicationList(): List<Medication> {
-        TODO("Not yet implemented")
+    override fun getMedicationList(): ArrayList<Medication> {
+        assertInitialized()
+        return medicationList
     }
 
     override fun getSdkVersion(): String {
-        TODO("Not yet implemented")
+        assertInitialized()
+        return "1.0.0"
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // private functions
+    ///////////////////////////////////////////////////////////////////////////
+    private fun assertInitialized() {
+        if (!isInitialized) {
+            throw IllegalStateException("MedSdkImpl not initialized, please call initialize() first")
+        }
+    }
+
+    private fun updateStorage() {
+        storageManager.saveToStorage(context!!, medicationList)
+    }
+
+    private fun loadFromStorage() {
+        if (!storageManager.isEmpty(context!!)) {
+            medicationList = storageManager.loadFromStorage(context!!)
+        }
     }
 }

@@ -1,10 +1,12 @@
 package com.thorne.sdk
 
+import android.content.Context
 import com.thorne.sdk.meds.Medication
 
 interface  MedSdk {
-    fun initialize()
+    fun initialize(context: Context)
 
+    fun isInitialized(): Boolean
 
     fun addMedication(medication: Medication)
 

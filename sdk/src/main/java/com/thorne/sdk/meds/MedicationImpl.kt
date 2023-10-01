@@ -1,22 +1,72 @@
 package com.thorne.sdk.meds
 
-class MedicationImpl : Medication {
-    override val id: String
-        get() = TODO("Not yet implemented")
-    override val name: String
-        get() = TODO("Not yet implemented")
-    override val dosage: String
-        get() = TODO("Not yet implemented")
-    override val frequency: String
-        get() = TODO("Not yet implemented")
-    override val startDate: String
-        get() = TODO("Not yet implemented")
-    override val endDate: String
-        get() = TODO("Not yet implemented")
-    override val notes: String
-        get() = TODO("Not yet implemented")
+import java.io.Serializable
+import java.util.Date
+import java.util.UUID
+
+class MedicationImpl(
+    private var name: String,
+    private var dosage: String,
+    private var frequency: String,
+    private var startDate: Date,
+    private var endDate: Date,
+    private var notes: String
+) : Medication, Serializable {
+    private var id: String = UUID.randomUUID().toString()
 
     override fun getId(): String {
-        TODO("Not yet implemented")
+        return id
+    }
+
+    override fun getName(): String {
+        return name
+    }
+
+    override fun getDosage(): String {
+        return dosage
+    }
+
+    override fun getFrequency(): String {
+        return frequency
+    }
+
+    override fun getStartDate(): Date {
+        return startDate
+    }
+
+    override fun getEndDate(): Date {
+        return endDate
+    }
+
+    override fun getNotes(): String {
+        return notes
+    }
+
+    override fun setId(id: String) {
+        this.id = id
+    }
+
+    override fun setName(name: String) {
+        this.name = name
+    }
+
+    override fun setDosage(dosage: String) {
+        this.dosage = dosage
+    }
+
+    override fun setFrequency(frequency: String) {
+        this.frequency = frequency
+    }
+
+    override fun setStartDate(startDate: Date) {
+        this.startDate = startDate
+    }
+
+    override fun setEndDate(endDate: Date) {
+        this.endDate = endDate
+    }
+
+    override fun setNotes(notes: String) {
+        this.notes = notes
     }
 }
