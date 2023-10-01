@@ -2,10 +2,9 @@ package com.thorne.sdk
 
 import com.thorne.sdk.meds.Medication
 
-interface MedSdk {
-
-    // use companion object in Impl, change this to abstract class
+interface  MedSdk {
     fun initialize()
+
 
     fun addMedication(medication: Medication)
 

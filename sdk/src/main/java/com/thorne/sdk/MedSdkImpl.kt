@@ -2,7 +2,21 @@ package com.thorne.sdk
 
 import com.thorne.sdk.meds.Medication
 
-class MedSdkImpl : MedSdk {
+class MedSdkImpl private constructor() : MedSdk {
+
+    companion object {
+        // Private reference to the singleton instance
+        @Volatile
+        private var INSTANCE: MedSdkImpl? = null
+
+        // Function to get or create the singleton instance
+        fun getInstance(): MedSdkImpl {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: MedSdkImpl().also { INSTANCE = it }
+            }
+        }
+    }
+
     override fun initialize() {
         TODO("Not yet implemented")
     }
