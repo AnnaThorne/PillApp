@@ -6,7 +6,7 @@ interface Medication {
     fun getId(): String
     fun getName(): String
     fun getDosage(): String
-    fun getFrequency(): String
+    fun getHourlyFrequency(): Int
     fun getStartDate(): Date
     fun getEndDate(): Date
     fun getNotes(): String
@@ -14,7 +14,7 @@ interface Medication {
     fun setId(id: String)
     fun setName(name: String)
     fun setDosage(dosage: String)
-    fun setFrequency(frequency: String)
+    fun setHourlyFrequency(frequency: Int)
     fun setStartDate(startDate: Date)
     fun setEndDate(endDate: Date)
     fun setNotes(notes: String)

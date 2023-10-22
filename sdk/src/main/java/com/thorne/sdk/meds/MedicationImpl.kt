@@ -7,7 +7,7 @@ import java.util.UUID
 class MedicationImpl(
     private var name: String,
     private var dosage: String,
-    private var frequency: String,
+    private var hourlyFrequency: Int,
     private var startDate: Date,
     private var endDate: Date,
     private var notes: String
@@ -26,8 +26,8 @@ class MedicationImpl(
         return dosage
     }
 
-    override fun getFrequency(): String {
-        return frequency
+    override fun getHourlyFrequency(): Int {
+        return hourlyFrequency
     }
 
     override fun getStartDate(): Date {
@@ -54,8 +54,8 @@ class MedicationImpl(
         this.dosage = dosage
     }
 
-    override fun setFrequency(frequency: String) {
-        this.frequency = frequency
+    override fun setHourlyFrequency(hourlyFrequency:  Int) {
+        this.hourlyFrequency = hourlyFrequency
     }
 
     override fun setStartDate(startDate: Date) {
