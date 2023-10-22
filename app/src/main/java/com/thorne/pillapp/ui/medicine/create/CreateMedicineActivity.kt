@@ -18,4 +18,12 @@ class CreateMedicineActivity : ComponentActivity() {
 }
 
 // need back button - main activity
-// need save button - main activity
+
+// need to save medicine to storage
+
+// need to load medicine from storage
+
+// need to delete medicine from storage
+
+// need to edit medicine from storage
+

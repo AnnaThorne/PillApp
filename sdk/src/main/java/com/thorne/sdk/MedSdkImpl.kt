@@ -13,6 +13,7 @@ class MedSdkImpl private constructor() : MedSdk {
         // Private reference to the singleton instance
 
         // Suppress warning because we're only ever storing application context
+        // which doesn't change, so we're not creating a memory leak
         @SuppressLint("StaticFieldLeak")
 
         @Volatile
