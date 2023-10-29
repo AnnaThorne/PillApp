@@ -2,6 +2,7 @@ package com.thorne.pillapp
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
@@ -54,9 +55,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+
 class MainActivity : ComponentActivity() {
+
+    private var prefs: SharedPreferences? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Get shared preferences
+        prefs = getSharedPreferences("com.thorne.pillapp", ComponentActivity.MODE_PRIVATE)
 
         // Initialize SDK with application context
         initSdk(this.applicationContext)
@@ -80,141 +87,52 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-}
+    @Composable
+    private fun PillApp(modifier: Modifier = Modifier) {
+        var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
-fun startCreateMedicineActivity(context: Context) {
-    val intent = Intent(context, CreateMedicineActivity::class.java)
-    context.startActivity(intent)
-
-}
-
-
-@Composable
-private fun PillApp(modifier: Modifier = Modifier) {
-
-    // TODO: make this persistent across app restarts
-    var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
-
-    Surface(modifier, color = colorScheme.background) {
-        if (shouldShowOnboarding) {
-            OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
-        } else {
-            PillCards(modifier = modifier, meds = MedSdkImpl.getInstance().getMedicationList())
-            val context = LocalContext.current
-            AddMedicationButton {
-                startCreateMedicineActivity(context)
+        Surface(modifier, color = colorScheme.background) {
+            if (prefs!!.getBoolean("first_run", true)) {
+                shouldShowOnboarding = true
+                prefs!!.edit().putBoolean("first_run", false).apply();
+            } else {
+                shouldShowOnboarding = false
             }
-        }
-    }
-}
-
-@Composable
-private fun PillCard(med: Medication) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = colorScheme.primary
-        ),
-        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
-    ) {
-        CardContent(med)
-    }
-}
-
-
-//TODO Add a edit button and stuff
-@Composable
-private fun CardContent(med: Medication) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Row(
-        modifier = Modifier
-            .padding(12.dp)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            )
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(12.dp)
-        ) {
-            Text(text = SimpleDateFormat("dd/MM/yy",Locale.getDefault()).format(Date(med.getStartDate())) + " - " + SimpleDateFormat("dd/MM/yy",Locale.getDefault()).format(Date(med.getEndDate())))
-            // Text(text = med.getHourlyFrequency().toString() + " times a day")
-            Text(
-                text = med.getName(), style = MaterialTheme.typography.headlineMedium.copy(
-                    fontWeight = FontWeight.ExtraBold
-                )
-            )
-            if (expanded) {
-                Text(
-                    text = med.getNotes()
-                )
-            }
-        }
-        IconButton(onClick = { expanded = !expanded }) {
-            Icon(
-                imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                contentDescription = if (expanded) {
-                    stringResource(R.string.show_less)
-                } else {
-                    stringResource(R.string.show_more)
+            if (shouldShowOnboarding) {
+                OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
+            } else {
+                PillCards(modifier = modifier, meds = MedSdkImpl.getInstance().getMedicationList())
+                val context = LocalContext.current
+                AddMedicationButton {
+                    startCreateMedicineActivity(context)
                 }
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun PillCards(
-    modifier: Modifier = Modifier, meds: List<Medication> = listOf()
-) {
-    Surface(
-        modifier = modifier, color = colorScheme.background
-    ) {
-        LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-            items(items = meds) { med ->
-                PillCard(med = med)
             }
         }
     }
-}
 
-@Composable
-fun OnboardingScreen(
-    onContinueClicked: () -> Unit, modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Welcome to PillApp!")
-        Button(
-            modifier = Modifier.padding(vertical = 24.dp), onClick = onContinueClicked
+    @Composable
+    private fun PillCard(med: Medication) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = colorScheme.primary
+            ), modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
-            Text("Continue")
+            CardContent(med)
         }
     }
-}
 
-@Composable
-private fun AddMedicationButton(onClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.End
-    ) {
+    private fun startCreateMedicineActivity(context: Context) {
+        val intent = Intent(context, CreateMedicineActivity::class.java)
+        context.startActivity(intent)
 
-        FloatingActionButton(
-            onClick = { onClick() },
-            containerColor = colorScheme.secondaryContainer,
-            contentColor = colorScheme.secondary,
+    }
+
+    //TODO Add a edit button and stuff
+    @Composable
+    private fun CardContent(med: Medication) {
+        var expanded by remember { mutableStateOf(false) }
+
+        Row(
             modifier = Modifier
                 .padding(12.dp)
                 .animateContentSize(
@@ -224,63 +142,167 @@ private fun AddMedicationButton(onClick: () -> Unit) {
                     )
                 )
         ) {
-            Icon(Icons.Filled.Add, "Floating action button.")
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = SimpleDateFormat(
+                        "dd/MM/yy", Locale.getDefault()
+                    ).format(Date(med.getStartDate())) + " - " + SimpleDateFormat(
+                        "dd/MM/yy", Locale.getDefault()
+                    ).format(Date(med.getEndDate()))
+                )
+                // Text(text = med.getHourlyFrequency().toString() + " times a day")
+                Text(
+                    text = med.getName(), style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                )
+                if (expanded) {
+                    Text(
+                        text = med.getNotes()
+                    )
+                }
+            }
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = if (expanded) {
+                        stringResource(R.string.show_less)
+                    } else {
+                        stringResource(R.string.show_more)
+                    }
+                )
+            }
+        }
+    }
+
+
+    @Composable
+    private fun PillCards(
+        modifier: Modifier = Modifier, meds: List<Medication> = listOf()
+    ) {
+        Surface(
+            modifier = modifier, color = colorScheme.background
+        ) {
+            LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
+                items(items = meds) { med ->
+                    PillCard(med = med)
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun OnboardingScreen(
+        onContinueClicked: () -> Unit, modifier: Modifier = Modifier
+    ) {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Welcome to PillApp!")
+            Button(
+                modifier = Modifier.padding(vertical = 24.dp), onClick = onContinueClicked
+            ) {
+                Text("Continue")
+            }
+        }
+    }
+
+    @Composable
+    private fun AddMedicationButton(onClick: () -> Unit) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.End
+        ) {
+
+            FloatingActionButton(
+                onClick = { onClick() },
+                containerColor = colorScheme.secondaryContainer,
+                contentColor = colorScheme.secondary,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .animateContentSize(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    )
+            ) {
+                Icon(Icons.Filled.Add, "Floating action button.")
+            }
+        }
+    }
+
+    private fun initSdk(context: Context) {
+        val medSdk = MedSdkImpl.getInstance()
+        try {
+            medSdk.initialize(context)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error during SDK initialization: ${e.message}")
+            e.printStackTrace()
+        }
+        Log.i("MainActivity", "SDK ver: ${medSdk.getSdkVersion()}")
+    }
+
+    /////////////////////////////
+// Previews
+/////////////////////////////
+    @Preview(showBackground = true, widthDp = 320)
+    @Composable
+    private fun GreetingsPreview() {
+        PillAppTheme {
+            PillCards()
+        }
+    }
+
+    @Preview
+    @Composable
+    fun MyAppPreview() {
+        PillAppTheme {
+            PillApp(Modifier.fillMaxSize())
+        }
+    }
+
+    @Preview(showBackground = true, widthDp = 320, heightDp = 320)
+    @Composable
+    fun OnboardingPreview() {
+        PillAppTheme {
+            OnboardingScreen(onContinueClicked = {}) // Do nothing on click
+        }
+    }
+
+    // Dark Mode Preview
+    @Preview(
+        showBackground = true,
+        widthDp = 320,
+        uiMode = Configuration.UI_MODE_NIGHT_YES,
+        name = "Dark"
+    )
+
+    @Preview(showBackground = true, widthDp = 320)
+    @Composable
+    fun DefaultPreview() {
+        PillAppTheme {
+            PillCards()
+            AddMedicationButton { /*Empty for Preview*/ }
         }
     }
 }
 
-private fun initSdk(context: Context) {
-    val medSdk = MedSdkImpl.getInstance()
-    try {
-        medSdk.initialize(context)
-    } catch (e: Exception) {
-        Log.e("MainActivity", "Error during SDK initialization: ${e.message}")
-        e.printStackTrace()
-    }
-    Log.i("MainActivity", "SDK ver: ${medSdk.getSdkVersion()}")
-}
 
-/////////////////////////////
-// Previews
-/////////////////////////////
-@Preview(showBackground = true, widthDp = 320)
-@Composable
-private fun GreetingsPreview() {
-    PillAppTheme {
-        PillCards()
-    }
-}
 
-@Preview
-@Composable
-fun MyAppPreview() {
-    PillAppTheme {
-        PillApp(Modifier.fillMaxSize())
-    }
-}
 
-@Preview(showBackground = true, widthDp = 320, heightDp = 320)
-@Composable
-fun OnboardingPreview() {
-    PillAppTheme {
-        OnboardingScreen(onContinueClicked = {}) // Do nothing on click
-    }
-}
 
-// Dark Mode Preview
-@Preview(
-    showBackground = true,
-    widthDp = 320,
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    name = "Dark"
-)
 
-@Preview(showBackground = true, widthDp = 320)
-@Composable
-fun DefaultPreview() {
-    PillAppTheme {
-        PillCards()
-        AddMedicationButton { /*Empty for Preview*/ }
-    }
-}
+
+
+
 
