@@ -2,4 +2,14 @@
     <string name="app_name">PillApp</string>
     <string name="show_less">Show less</string>
     <string name="show_more">Show more</string>
+    <string name="create_medication">Create Medication</string>
+    <string name="medicine_name">Name</string>
+    <string name="medicine_dosage">Dosage</string>
+    <string name="medicine_frequency">Frequency (Hours)</string>
+    <string name="medicine_end_date">End Date</string>
+    <string name="medicine_start_date">Start Date</string>
+    <string name="success">Success!</string>
+    <string name="value_is_empty">Value %s is empty!</string>
+    <string name="save">Save</string>
+    <string name="medicine_notes">Notes</string>
 </resources>
