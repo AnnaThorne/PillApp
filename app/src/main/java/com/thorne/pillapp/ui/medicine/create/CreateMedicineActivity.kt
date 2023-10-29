@@ -344,10 +344,8 @@ fun CreateStartDateSelection(startDate: (Long) -> Unit) {
 
 fun saveMedication(name: String, dosage: String, frequency: String, endDate: Long, startDate: Long, notes: String){
     val med = MedicationImpl(name, dosage, frequency.toInt(), startDate, endDate, notes)
-    Log.i("Medication", "made the med object")
     MedSdkImpl.getInstance().addMedication(med)
-    // log a list of all medications
-    Log.i("Medication", MedSdkImpl.getInstance().getMedicationList().toString())
+    Log.d("Medication", MedSdkImpl.getInstance().getMedicationList().toString())
 }
 
 fun startOverviewActivity(context: Context) {
