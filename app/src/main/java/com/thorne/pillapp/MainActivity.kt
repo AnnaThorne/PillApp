@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
@@ -47,11 +48,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.thorne.pillapp.ui.medicine.create.CreateMedicineActivity
 import com.thorne.pillapp.ui.theme.PillAppTheme
-
+import com.thorne.sdk.MedSdkImpl
+import com.thorne.sdk.meds.Medication
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize SDK with application context
+        initSdk(this.applicationContext)
+
+        setContent {
+            PillAppTheme {
+                // A surface container using the 'background' color from the theme
+                PillApp()
+            }
+        }
+    }
+
+    override fun onActivityReenter(resultCode: Int, data: Intent?) {
+        super.onActivityReenter(resultCode, data)
+        Log.i("MainActivity", "onActivityReenter")
         setContent {
             PillAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -65,6 +85,7 @@ class MainActivity : ComponentActivity() {
 fun startCreateMedicineActivity(context: Context) {
     val intent = Intent(context, CreateMedicineActivity::class.java)
     context.startActivity(intent)
+
 }
 
 
@@ -74,11 +95,11 @@ private fun PillApp(modifier: Modifier = Modifier) {
     // TODO: make this persistent across app restarts
     var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
 
-    Surface(modifier, color = MaterialTheme.colorScheme.background) {
+    Surface(modifier, color = colorScheme.background) {
         if (shouldShowOnboarding) {
             OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
         } else {
-            Greetings()
+            PillCards(modifier = modifier, meds = MedSdkImpl.getInstance().getMedicationList())
             val context = LocalContext.current
             AddMedicationButton {
                 startCreateMedicineActivity(context)
@@ -88,19 +109,21 @@ private fun PillApp(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun Greeting(name: String) {
+private fun PillCard(med: Medication) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = colorScheme.primary
         ),
         modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
-        CardContent(name)
+        CardContent(med)
     }
 }
 
+
+//TODO Add a edit button and stuff
 @Composable
-private fun CardContent(name: String) {
+private fun CardContent(med: Medication) {
     var expanded by remember { mutableStateOf(false) }
 
     Row(
@@ -118,16 +141,16 @@ private fun CardContent(name: String) {
                 .weight(1f)
                 .padding(12.dp)
         ) {
-            Text(text = "Hello, ")
+            Text(text = SimpleDateFormat("dd/MM/yy",Locale.getDefault()).format(Date(med.getStartDate())) + " - " + SimpleDateFormat("dd/MM/yy",Locale.getDefault()).format(Date(med.getEndDate())))
+            // Text(text = med.getHourlyFrequency().toString() + " times a day")
             Text(
-                text = name, style = MaterialTheme.typography.headlineMedium.copy(
+                text = med.getName(), style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.ExtraBold
                 )
             )
             if (expanded) {
                 Text(
-                    text = ("Composem ipsum color sit lazy, " +
-                            "padding theme elit, sed do bouncy. ").repeat(4),
+                    text = med.getNotes()
                 )
             }
         }
@@ -146,15 +169,15 @@ private fun CardContent(name: String) {
 
 
 @Composable
-private fun Greetings(
-    modifier: Modifier = Modifier, names: List<String> = List(1000) { "$it" }
+private fun PillCards(
+    modifier: Modifier = Modifier, meds: List<Medication> = listOf()
 ) {
     Surface(
-        modifier = modifier, color = MaterialTheme.colorScheme.background
+        modifier = modifier, color = colorScheme.background
     ) {
         LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-            items(items = names) { name ->
-                Greeting(name = name)
+            items(items = meds) { med ->
+                PillCard(med = med)
             }
         }
     }
@@ -206,6 +229,16 @@ private fun AddMedicationButton(onClick: () -> Unit) {
     }
 }
 
+private fun initSdk(context: Context) {
+    val medSdk = MedSdkImpl.getInstance()
+    try {
+        medSdk.initialize(context)
+    } catch (e: Exception) {
+        Log.e("MainActivity", "Error during SDK initialization: ${e.message}")
+        e.printStackTrace()
+    }
+    Log.i("MainActivity", "SDK ver: ${medSdk.getSdkVersion()}")
+}
 
 /////////////////////////////
 // Previews
@@ -214,7 +247,7 @@ private fun AddMedicationButton(onClick: () -> Unit) {
 @Composable
 private fun GreetingsPreview() {
     PillAppTheme {
-        Greetings()
+        PillCards()
     }
 }
 
@@ -230,7 +263,7 @@ fun MyAppPreview() {
 @Composable
 fun OnboardingPreview() {
     PillAppTheme {
-        OnboardingScreen(onContinueClicked = {}) // Do nothing on click.
+        OnboardingScreen(onContinueClicked = {}) // Do nothing on click
     }
 }
 
@@ -246,8 +279,8 @@ fun OnboardingPreview() {
 @Composable
 fun DefaultPreview() {
     PillAppTheme {
-        Greetings()
-        AddMedicationButton { /*TODO*/ }
+        PillCards()
+        AddMedicationButton { /*Empty for Preview*/ }
     }
 }
 

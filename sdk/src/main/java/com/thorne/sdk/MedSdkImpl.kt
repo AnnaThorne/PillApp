@@ -7,7 +7,7 @@ import com.thorne.sdk.storage.MedicationStorageManagerImpl
 
 class MedSdkImpl private constructor() : MedSdk {
     ///////////////////////////////////////////////////////////////////////////
-    // variables
+    // Variables
     ///////////////////////////////////////////////////////////////////////////
     companion object {
         // Private reference to the singleton instance
@@ -34,12 +34,12 @@ class MedSdkImpl private constructor() : MedSdk {
     private var context: Context? = null
 
     ///////////////////////////////////////////////////////////////////////////
-    // public functions
+    // Public Functions
     ///////////////////////////////////////////////////////////////////////////
     override fun initialize(context: Context) {
         this.context = context.applicationContext
-        loadFromStorage()
         isInitialized = true
+        loadFromStorage()
     }
 
     override fun isInitialized(): Boolean {
@@ -80,7 +80,7 @@ class MedSdkImpl private constructor() : MedSdk {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // private functions
+    // Private Functions
     ///////////////////////////////////////////////////////////////////////////
     private fun assertInitialized() {
         if (!isInitialized) {

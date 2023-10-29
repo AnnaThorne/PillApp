@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.thorne.pillapp"
-    compileSdk = 33
+    compileSdk = 33 // Android 13
 
     defaultConfig {
         applicationId = "com.thorne.pillapp"
-        minSdk = 29
-        targetSdk = 33
+        minSdk = 29  // Android 10
+        targetSdk = 33 // Android 13
         versionCode = 1
         versionName = "1.0"
 
@@ -22,7 +22,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -53,7 +53,7 @@ android {
 }
 
 dependencies {
-
+    implementation(project(":sdk"))
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.2")

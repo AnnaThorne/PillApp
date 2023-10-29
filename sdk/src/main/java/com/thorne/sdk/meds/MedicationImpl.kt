@@ -1,17 +1,16 @@
 package com.thorne.sdk.meds
 
-import java.io.Serializable
-import java.util.Date
 import java.util.UUID
 
+@kotlinx.serialization.Serializable
 class MedicationImpl(
     private var name: String,
     private var dosage: String,
-    private var hourlyFrequency: Int,
-    private var startDate: Date,
-    private var endDate: Date,
+    private var frequency: Int,
+    private var startDate: Long,
+    private var endDate: Long,
     private var notes: String
-) : Medication, Serializable {
+) : Medication {
     private var id: String = UUID.randomUUID().toString()
 
     override fun getId(): String {
@@ -26,15 +25,15 @@ class MedicationImpl(
         return dosage
     }
 
-    override fun getHourlyFrequency(): Int {
-        return hourlyFrequency
+    override fun getFrequency(): Int {
+        return frequency
     }
 
-    override fun getStartDate(): Date {
+    override fun getStartDate(): Long {
         return startDate
     }
 
-    override fun getEndDate(): Date {
+    override fun getEndDate(): Long {
         return endDate
     }
 
@@ -54,15 +53,15 @@ class MedicationImpl(
         this.dosage = dosage
     }
 
-    override fun setHourlyFrequency(hourlyFrequency:  Int) {
-        this.hourlyFrequency = hourlyFrequency
+    override fun setFrequency(frequency:  Int) {
+        this.frequency = frequency
     }
 
-    override fun setStartDate(startDate: Date) {
+    override fun setStartDate(startDate: Long) {
         this.startDate = startDate
     }
 
-    override fun setEndDate(endDate: Date) {
+    override fun setEndDate(endDate: Long) {
         this.endDate = endDate
     }
 

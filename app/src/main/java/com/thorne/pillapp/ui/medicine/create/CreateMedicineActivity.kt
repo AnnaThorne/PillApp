@@ -1,7 +1,10 @@
 package com.thorne.pillapp.ui.medicine.create
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -40,8 +43,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.thorne.pillapp.MainActivity
 import com.thorne.pillapp.R
 import com.thorne.pillapp.ui.theme.PillAppTheme
+import com.thorne.sdk.MedSdkImpl
+import com.thorne.sdk.meds.MedicationImpl
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -199,12 +205,14 @@ fun CreateMedicineScreen() {
                         ).show()
                     },
                     onValidate = {
-                        // TODO: Navigate to next screen / Store medication info
+                        // DONE! Navigate to next screen / Store medication info
+                        saveMedication(medicineName, medicineDosage, medicineHourlyFrequency, medicineEndDate, medicineStartDate, medicineNotes)
                         Toast.makeText(
                             context,
                             context.getString(R.string.success),
                             Toast.LENGTH_LONG
                         ).show()
+                        startOverviewActivity(context)
                     }
                 )
             },
@@ -332,6 +340,20 @@ fun CreateStartDateSelection(startDate: (Long) -> Unit) {
     if (isPressed) {
         datePickerDialog.show()
     }
+}
+
+fun saveMedication(name: String, dosage: String, frequency: String, endDate: Long, startDate: Long, notes: String){
+    val med = MedicationImpl(name, dosage, frequency.toInt(), startDate, endDate, notes)
+    Log.i("Medication", "made the med object")
+    MedSdkImpl.getInstance().addMedication(med)
+    // log a list of all medications
+    Log.i("Medication", MedSdkImpl.getInstance().getMedicationList().toString())
+}
+
+fun startOverviewActivity(context: Context) {
+    val intent = Intent(context, MainActivity::class.java)
+    context.startActivity(intent)
+
 }
 
 fun Int.toMonthName(): String {
