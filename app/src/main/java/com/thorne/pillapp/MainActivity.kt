@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
@@ -22,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.Button
@@ -36,6 +38,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -59,11 +62,12 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
 
     private var prefs: SharedPreferences? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Get shared preferences
-        prefs = getSharedPreferences("com.thorne.pillapp", ComponentActivity.MODE_PRIVATE)
+        prefs = getSharedPreferences("com.thorne.pillapp", MODE_PRIVATE)
 
         // Initialize SDK with application context
         initSdk(this.applicationContext)
@@ -90,18 +94,19 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun PillApp(modifier: Modifier = Modifier) {
         var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
+        var meds = MedSdkImpl.getInstance().getMedicationList()
 
         Surface(modifier, color = colorScheme.background) {
             if (prefs!!.getBoolean("first_run", true)) {
                 shouldShowOnboarding = true
-                prefs!!.edit().putBoolean("first_run", false).apply();
+                prefs!!.edit().putBoolean("first_run", false).apply()
             } else {
                 shouldShowOnboarding = false
             }
             if (shouldShowOnboarding) {
                 OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
             } else {
-                PillCards(modifier = modifier, meds = MedSdkImpl.getInstance().getMedicationList())
+                PillCards(modifier = modifier, meds = meds)
                 val context = LocalContext.current
                 AddMedicationButton {
                     startCreateMedicineActivity(context)
@@ -111,13 +116,13 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun PillCard(med: Medication) {
+    private fun PillCard(med: Medication, onDeleteClick: (Medication) -> Unit) {
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = colorScheme.primary
             ), modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
         ) {
-            CardContent(med)
+            CardContent(med, onDeleteClick, LocalContext.current)
         }
     }
 
@@ -129,7 +134,7 @@ class MainActivity : ComponentActivity() {
 
     //TODO Add a edit button and stuff
     @Composable
-    private fun CardContent(med: Medication) {
+    private fun CardContent(med: Medication, onDeleteClick: (Medication) -> Unit, context: Context) {
         var expanded by remember { mutableStateOf(false) }
 
         Row(
@@ -176,20 +181,40 @@ class MainActivity : ComponentActivity() {
                     }
                 )
             }
-        }
+//            delete button
+            IconButton(onClick = {
+                onDeleteClick(med)
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.success),
+                    Toast.LENGTH_LONG
+                ).show()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Delete"
+                )
+            }
+    }
     }
 
 
     @Composable
     private fun PillCards(
-        modifier: Modifier = Modifier, meds: List<Medication> = listOf()
+        modifier: Modifier = Modifier, meds: List<Medication> = emptyList()
     ) {
+        val medications = remember { mutableStateListOf<Medication>() }
+        medications.addAll(meds)
         Surface(
             modifier = modifier, color = colorScheme.background
         ) {
             LazyColumn(modifier = modifier.padding(vertical = 4.dp)) {
-                items(items = meds) { med ->
-                    PillCard(med = med)
+                items(items = medications) { med ->
+                    PillCard(med = med, onDeleteClick = { med ->
+                        MedSdkImpl.getInstance().removeMedication(med)
+                        medications.remove(med)
+                    })
+
                 }
             }
         }
