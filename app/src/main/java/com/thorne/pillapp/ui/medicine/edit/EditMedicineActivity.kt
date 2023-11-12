@@ -292,8 +292,6 @@ class EditMedicineActivity : ComponentActivity() {
         val currentDate = Date(startDate).toFormattedString()
         var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
 
-        val context = LocalContext.current
-
         val calendar = Calendar.getInstance()
         calendar.time = Date(startDate)
         var year: Int

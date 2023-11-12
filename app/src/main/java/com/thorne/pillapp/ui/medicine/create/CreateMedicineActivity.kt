@@ -1,11 +1,9 @@
 package com.thorne.pillapp.ui.medicine.create
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.DatePicker
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,11 +24,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -248,6 +251,78 @@ private fun validateMedication(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun CreateStartDateSelection(startDate: (Long) -> Unit) {
+
+    Text(
+        text = stringResource(id = R.string.medicine_start_date),
+        style = MaterialTheme.typography.bodyLarge
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
+
+    val currentDate = Date().toFormattedString()
+    var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
+
+    val calendar = Calendar.getInstance()
+    var year: Int
+    var month: Int
+    var day: Int
+    calendar.time = Date()
+
+    var savedDate: Long = 0
+
+    val state = rememberDatePickerState()
+    val openDialog = remember { mutableStateOf(false) }
+
+    if (isPressed) {
+        openDialog.value = true
+    }
+    if (openDialog.value) {
+        DatePickerDialog(colors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background,
+            headlineContentColor = MaterialTheme.colorScheme.primary,
+            weekdayContentColor = MaterialTheme.colorScheme.secondaryContainer
+        ), onDismissRequest = {
+            openDialog.value = false
+        }, confirmButton = {
+            TextButton(onClick = {
+                startDate(state.selectedDateMillis!!)
+                savedDate = state.selectedDateMillis!!
+                calendar.time = Date(savedDate)
+                year = calendar.get(Calendar.YEAR)
+                month = calendar.get(Calendar.MONTH)
+                day = calendar.get(Calendar.DAY_OF_MONTH)
+                selectedDate = "${month.toMonthName()} $day, $year"
+                openDialog.value = false
+            }) {
+                Text("OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = {
+                openDialog.value = false
+            }) {
+                Text("CANCEL")
+            }
+        }) {
+            DatePicker(
+                state = state
+            )
+        }
+    }
+
+    TextField(
+        modifier = Modifier.fillMaxWidth(),
+        readOnly = true,
+        value = selectedDate,
+        onValueChange = {},
+        trailingIcon = { Icons.Default.DateRange },
+        interactionSource = interactionSource
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun CreateEndDateSelection(endDate: (Long) -> Unit) {
     Text(
         text = stringResource(id = R.string.medicine_end_date),
@@ -260,21 +335,53 @@ fun CreateEndDateSelection(endDate: (Long) -> Unit) {
     val currentDate = Date().toFormattedString()
     var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
 
-    val context = LocalContext.current
 
     val calendar = Calendar.getInstance()
-    val year: Int = calendar.get(Calendar.YEAR)
-    val month: Int = calendar.get(Calendar.MONTH)
-    val day: Int = calendar.get(Calendar.DAY_OF_MONTH)
+    var year: Int
+    var month: Int
+    var day: Int
     calendar.time = Date()
 
-    val datePickerDialog =
-        DatePickerDialog(context, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val newDate = Calendar.getInstance()
-            newDate.set(year, month, dayOfMonth)
-            selectedDate = "${month.toMonthName()} $dayOfMonth, $year"
-            endDate(newDate.timeInMillis)
-        }, year, month, day)
+    var savedDate: Long = 0
+
+    val state = rememberDatePickerState()
+    val openDialog = remember { mutableStateOf(false) }
+
+    if (isPressed) {
+        openDialog.value = true
+    }
+    if (openDialog.value) {
+        DatePickerDialog(colors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background,
+            headlineContentColor = MaterialTheme.colorScheme.primary,
+            weekdayContentColor = MaterialTheme.colorScheme.secondaryContainer
+        ), onDismissRequest = {
+            openDialog.value = false
+        }, confirmButton = {
+            TextButton(onClick = {
+                endDate(state.selectedDateMillis!!)
+                savedDate = state.selectedDateMillis!!
+                calendar.time = Date(savedDate)
+                year = calendar.get(Calendar.YEAR)
+                month = calendar.get(Calendar.MONTH)
+                day = calendar.get(Calendar.DAY_OF_MONTH)
+                selectedDate = "${month.toMonthName()} $day, $year"
+                openDialog.value = false
+            }) {
+                Text("OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = {
+                openDialog.value = false
+            }) {
+                Text("CANCEL")
+            }
+        }) {
+            DatePicker(
+                state = state
+            )
+        }
+    }
 
     TextField(
         modifier = Modifier.fillMaxWidth(),
@@ -284,54 +391,6 @@ fun CreateEndDateSelection(endDate: (Long) -> Unit) {
         trailingIcon = { Icons.Default.DateRange },
         interactionSource = interactionSource
     )
-
-    if (isPressed) {
-        datePickerDialog.show()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateStartDateSelection(startDate: (Long) -> Unit) {
-    Text(
-        text = stringResource(id = R.string.medicine_start_date),
-        style = MaterialTheme.typography.bodyLarge
-    )
-
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
-
-    val currentDate = Date().toFormattedString()
-    var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
-
-    val context = LocalContext.current
-
-    val calendar = Calendar.getInstance()
-    val year: Int = calendar.get(Calendar.YEAR)
-    val month: Int = calendar.get(Calendar.MONTH)
-    val day: Int = calendar.get(Calendar.DAY_OF_MONTH)
-    calendar.time = Date()
-
-    val datePickerDialog =
-        DatePickerDialog(context, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val newDate = Calendar.getInstance()
-            newDate.set(year, month, dayOfMonth)
-            selectedDate = "${month.toMonthName()} $dayOfMonth, $year"
-            startDate(newDate.timeInMillis)
-        }, year, month, day)
-
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        readOnly = true,
-        value = selectedDate,
-        onValueChange = {},
-        trailingIcon = { Icons.Default.DateRange },
-        interactionSource = interactionSource
-    )
-
-    if (isPressed) {
-        datePickerDialog.show()
-    }
 }
 
 fun saveMedication(name: String, dosage: String, frequency: String,  startDate: Long, endDate: Long, notes: String){
