@@ -12,4 +12,6 @@
     <string name="value_is_empty">Value %s is empty!</string>
     <string name="save">Save</string>
     <string name="medicine_notes">Notes</string>
+    <string name="dialog_deletion_title">Confirm Deletion</string>
+    <string name="dialog_deletion_text">Are you sure you want to delete this medication?</string>
 </resources>
