@@ -58,6 +58,29 @@ class MedSdkImpl private constructor() : MedSdk {
         updateStorage()
     }
 
+    override fun updateMedication(
+        id: String,
+        name: String,
+        dosage: String,
+        frequency: Int,
+        startDate: Long,
+        endDate: Long,
+        notes: String
+    ) {
+        assertInitialized()
+        medicationList.forEach {
+            if (it.getId() == id) {
+                it.setName(name)
+                it.setDosage(dosage)
+                it.setFrequency(frequency)
+                it.setStartDate(startDate)
+                it.setEndDate(endDate)
+                it.setNotes(notes)
+            }
+        }
+        updateStorage()
+    }
+
     override fun removeMedication(id: String) {
         assertInitialized()
         medicationList.removeIf { it.getId() == id }

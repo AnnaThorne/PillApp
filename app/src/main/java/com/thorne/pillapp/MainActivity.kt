@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.thorne.pillapp.ui.dialogues.ConfirmDialog
 import com.thorne.pillapp.ui.medicine.create.CreateMedicineActivity
+import com.thorne.pillapp.ui.medicine.edit.EditMedicineActivity
 import com.thorne.pillapp.ui.theme.PillAppTheme
 import com.thorne.sdk.MedSdkImpl
 import com.thorne.sdk.meds.Medication
@@ -135,7 +135,18 @@ class MainActivity : ComponentActivity() {
     private fun startCreateMedicineActivity(context: Context) {
         val intent = Intent(context, CreateMedicineActivity::class.java)
         context.startActivity(intent)
+    }
 
+    private fun startEditMedicineActivity(context: Context, med: Medication) {
+        val intent = Intent(context, EditMedicineActivity::class.java)
+        intent.putExtra("medId", med.getId())
+        intent.putExtra("medName", med.getName())
+        intent.putExtra("medDosage", med.getDosage())
+        intent.putExtra("medFrequency", med.getFrequency())
+        intent.putExtra("medStartDate", med.getStartDate())
+        intent.putExtra("medEndDate", med.getEndDate())
+        intent.putExtra("medNotes", med.getNotes())
+        context.startActivity(intent)
     }
 
     //TODO Add a edit button and stuff
@@ -227,7 +238,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            Column (
+            Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Expand button
@@ -247,7 +258,7 @@ class MainActivity : ComponentActivity() {
                     // Edit button
                     Row {
                         IconButton(onClick = {
-
+                            startEditMedicineActivity(context, med)
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.Edit, contentDescription = "Edit"

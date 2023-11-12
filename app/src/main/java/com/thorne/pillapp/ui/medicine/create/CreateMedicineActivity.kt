@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -60,23 +61,13 @@ class CreateMedicineActivity : ComponentActivity() {
         setContent {
             PillAppTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colorScheme.background) {
+                Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxHeight()) {
                     CreateMedicineScreen()
                 }
             }
         }
     }
 }
-
-// need back button - main activity
-
-// need to save medicine to storage
-
-// need to load medicine from storage
-
-// need to delete medicine from storage
-
-// need to edit medicine from storage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,8 +76,8 @@ fun CreateMedicineScreen() {
     var medicineDosage by rememberSaveable { mutableStateOf("") }
     var medicineHourlyFrequency by rememberSaveable { mutableStateOf("1") }
     var medicineNotes by rememberSaveable { mutableStateOf("") }
-    var medicineEndDate by rememberSaveable { mutableStateOf(Date().time) }
     var medicineStartDate by rememberSaveable { mutableStateOf(Date().time) }
+    var medicineEndDate by rememberSaveable { mutableStateOf(Date().time) }
 
     val context = LocalContext.current
 
@@ -94,7 +85,8 @@ fun CreateMedicineScreen() {
     Column(
         modifier = Modifier
             .padding(16.dp, 16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
@@ -160,11 +152,11 @@ fun CreateMedicineScreen() {
 
         Spacer(modifier = Modifier.padding(8.dp))
 
-        CreateEndDateSelection { medicineEndDate = it}
+        CreateStartDateSelection { medicineStartDate = it}
 
         Spacer(modifier = Modifier.padding(8.dp))
 
-        CreateStartDateSelection { medicineStartDate = it}
+        CreateEndDateSelection { medicineEndDate = it}
 
         Spacer(modifier = Modifier.padding(8.dp))
 
@@ -206,7 +198,7 @@ fun CreateMedicineScreen() {
                     },
                     onValidate = {
                         // DONE! Navigate to next screen / Store medication info
-                        saveMedication(medicineName, medicineDosage, medicineHourlyFrequency, medicineEndDate, medicineStartDate, medicineNotes)
+                        saveMedication(medicineName, medicineDosage, medicineHourlyFrequency,  medicineStartDate, medicineEndDate, medicineNotes)
                         Toast.makeText(
                             context,
                             context.getString(R.string.success),
@@ -342,7 +334,7 @@ fun CreateStartDateSelection(startDate: (Long) -> Unit) {
     }
 }
 
-fun saveMedication(name: String, dosage: String, frequency: String, endDate: Long, startDate: Long, notes: String){
+fun saveMedication(name: String, dosage: String, frequency: String,  startDate: Long, endDate: Long, notes: String){
     val med = MedicationImpl(name, dosage, frequency.toInt(), startDate, endDate, notes)
     MedSdkImpl.getInstance().addMedication(med)
     Log.d("Medication", MedSdkImpl.getInstance().getMedicationList().toString())

@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.thorne.pillapp"
-    compileSdk = 33 // Android 13
+    compileSdk = 34 // Android 14
 
     defaultConfig {
         applicationId = "com.thorne.pillapp"
         minSdk = 29  // Android 10
-        targetSdk = 33 // Android 13
+        targetSdk = 34 // Android 14
         versionCode = 1
         versionName = "1.0"
 
@@ -62,6 +62,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation ("androidx.compose.material3:material3:1.2.0-alpha10")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.thorne.sdk"
-    compileSdk = 33
+    compileSdk = 34 // Android 14
 
     defaultConfig {
         minSdk = 29  // Android 10
