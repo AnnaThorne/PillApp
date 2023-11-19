@@ -33,9 +33,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.thorne.pillapp.MainActivity
 import com.thorne.pillapp.R
 import com.thorne.pillapp.ui.theme.PillAppTheme
+import com.thorne.pillapp.util.reminders.MedNotificationService
 import com.thorne.sdk.MedSdkImpl
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
@@ -59,8 +63,8 @@ import java.util.Date
 import java.util.Locale
 
 class EditMedicineActivity : ComponentActivity() {
-    var globalStartDate: Long = 0
-    var globalEndDate: Long = 0
+    private var globalStartDate: Long = 0
+    private var globalEndDate: Long = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -75,6 +79,8 @@ class EditMedicineActivity : ComponentActivity() {
                         intent.getStringExtra("medName")!!,
                         intent.getStringExtra("medDosage")!!,
                         intent.getIntExtra("medFrequency", 0),
+                        intent.getIntExtra("medStartHour", 0),
+                        intent.getIntExtra("medStartMin", 0),
                         intent.getLongExtra("medStartDate", 0),
                         intent.getLongExtra("medEndDate", 0),
                         intent.getStringExtra("medNotes")!!
@@ -84,7 +90,6 @@ class EditMedicineActivity : ComponentActivity() {
         }
     }
 
-
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun EditMedicineScreen(
@@ -92,20 +97,24 @@ class EditMedicineActivity : ComponentActivity() {
         name: String,
         dosage: String,
         frequency: Int,
+        startHour: Int,
+        startMin: Int,
         startDate: Long,
         endDate: Long,
         notes: String
     ) {
-        var medicineId by rememberSaveable { mutableStateOf(id) }
+        val medicineId by rememberSaveable { mutableStateOf(id) }
         var medicineName by rememberSaveable { mutableStateOf(name) }
         var medicineDosage by rememberSaveable { mutableStateOf(dosage) }
         var medicineHourlyFrequency by rememberSaveable { mutableStateOf(frequency.toString()) }
+        var medicineStartHour by rememberSaveable { mutableIntStateOf(startHour) }
+        var medicineStartMin by rememberSaveable { mutableIntStateOf(startMin) }
         var medicineNotes by rememberSaveable { mutableStateOf(notes) }
         var medicineStartDate by rememberSaveable { mutableLongStateOf(startDate) }
         var medicineEndDate by rememberSaveable { mutableLongStateOf(endDate) }
+        val timePickerState = rememberTimePickerState(startHour, startMin)
 
         val context = LocalContext.current
-
 
         Column(
             modifier = Modifier
@@ -174,7 +183,19 @@ class EditMedicineActivity : ComponentActivity() {
                 }
             }
 
-            Spacer(modifier = Modifier.padding(8.dp))
+            Spacer(modifier = Modifier.padding(4.dp))
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = stringResource(id = R.string.medicine_start_hour_and_minute),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                TimeInput(
+                    state = timePickerState, modifier = Modifier.padding(8.dp)
+                )
+            }
 
             CreateStartDateSelection(medicineStartDate)
 
@@ -215,25 +236,34 @@ class EditMedicineActivity : ComponentActivity() {
                     validateMedication(name = medicineName,
                         dosage = medicineDosage,
                         frequency = medicineHourlyFrequency,
+                        startHour = timePickerState.hour,
+                        startMinute = timePickerState.minute,
                         endDate = medicineEndDate,
                         startDate = medicineStartDate,
                         onInvalidate = {
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.value_is_empty, context.getString(it)),
+                                context.getString(R.string.value_is_invalid, context.getString(it)),
                                 Toast.LENGTH_LONG
                             ).show()
                         },
                         onValidate = {
+                            // Get values from time picker
+                            medicineStartHour = timePickerState.hour
+                            medicineStartMin = timePickerState.minute
+
                             // DONE! Navigate to next screen / Update medication info
                             updateMedication(
                                 medicineId,
                                 medicineName,
                                 medicineDosage,
                                 medicineHourlyFrequency,
+                                medicineStartHour,
+                                medicineStartMin,
                                 medicineStartDate,
                                 medicineEndDate,
-                                medicineNotes
+                                medicineNotes,
+                                context.applicationContext
                             )
                             Toast.makeText(
                                 context, context.getString(R.string.success), Toast.LENGTH_LONG
@@ -255,6 +285,8 @@ class EditMedicineActivity : ComponentActivity() {
         name: String,
         dosage: String,
         frequency: String,
+        startHour: Int,
+        startMinute: Int,
         startDate: Long,
         endDate: Long,
         onInvalidate: (Int) -> Unit,
@@ -267,6 +299,26 @@ class EditMedicineActivity : ComponentActivity() {
 
         if (dosage.isEmpty()) {
             onInvalidate(R.string.medicine_dosage)
+            return
+        }
+
+        if (frequency.isEmpty()) {
+            onInvalidate(R.string.medicine_name)
+            return
+        }
+
+        if (startHour > 24 || startHour < 0) {
+            onInvalidate(R.string.medicine_start_hour)
+            return
+        }
+
+        if (startMinute > 60 || startMinute < 0) {
+            onInvalidate(R.string.medicine_start_minute)
+            return
+        }
+
+        if (startDate < 1) {
+            onInvalidate(R.string.medicine_start_date)
             return
         }
 
@@ -298,7 +350,7 @@ class EditMedicineActivity : ComponentActivity() {
         var month: Int
         var day: Int
 
-        var savedDate: Long = 0
+        var savedDate: Long
 
         val state = rememberDatePickerState()
         val openDialog = remember { mutableStateOf(false) }
@@ -315,14 +367,16 @@ class EditMedicineActivity : ComponentActivity() {
                 openDialog.value = false
             }, confirmButton = {
                 TextButton(onClick = {
-                    savedDate = state.selectedDateMillis!!
-                    globalStartDate = savedDate
-                    calendar.time = Date(savedDate)
-                    year = calendar.get(Calendar.YEAR)
-                    month = calendar.get(Calendar.MONTH)
-                    day = calendar.get(Calendar.DAY_OF_MONTH)
-                    selectedDate = "${month.toMonthName()} $day, $year"
-                    openDialog.value = false
+                    if (state.selectedDateMillis != null) {
+                        savedDate = state.selectedDateMillis!!
+                        globalStartDate = savedDate
+                        calendar.time = Date(savedDate)
+                        year = calendar.get(Calendar.YEAR)
+                        month = calendar.get(Calendar.MONTH)
+                        day = calendar.get(Calendar.DAY_OF_MONTH)
+                        selectedDate = "${month.toMonthName()} $day, $year"
+                        openDialog.value = false
+                    }
                 }) {
                     Text("OK")
                 }
@@ -339,9 +393,7 @@ class EditMedicineActivity : ComponentActivity() {
             }
         }
 
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
+        TextField(readOnly = true,
             value = selectedDate,
             onValueChange = {},
             trailingIcon = { Icons.Default.DateRange },
@@ -385,14 +437,16 @@ class EditMedicineActivity : ComponentActivity() {
                 openDialog.value = false
             }, confirmButton = {
                 TextButton(onClick = {
-                    savedDate = state.selectedDateMillis!!
-                    globalEndDate = savedDate
-                    calendar.time = Date(savedDate)
-                    year = calendar.get(Calendar.YEAR)
-                    month = calendar.get(Calendar.MONTH)
-                    day = calendar.get(Calendar.DAY_OF_MONTH)
-                    selectedDate = "${month.toMonthName()} $day, $year"
-                    openDialog.value = false
+                    if (state.selectedDateMillis != null) {
+                        savedDate = state.selectedDateMillis!!
+                        globalEndDate = savedDate
+                        calendar.time = Date(savedDate)
+                        year = calendar.get(Calendar.YEAR)
+                        month = calendar.get(Calendar.MONTH)
+                        day = calendar.get(Calendar.DAY_OF_MONTH)
+                        selectedDate = "${month.toMonthName()} $day, $year"
+                        openDialog.value = false
+                    }
                 }) {
                     Text("OK")
                 }
@@ -408,9 +462,7 @@ class EditMedicineActivity : ComponentActivity() {
                 )
             }
         }
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            readOnly = true,
+        TextField(readOnly = true,
             value = selectedDate,
             onValueChange = {},
             trailingIcon = { Icons.Default.DateRange },
@@ -423,14 +475,31 @@ class EditMedicineActivity : ComponentActivity() {
         name: String,
         dosage: String,
         frequency: String,
+        startHour: Int,
+        startMin: Int,
         startDate: Long,
         endDate: Long,
-        notes: String
+        notes: String,
+        context: Context
     ) {
         MedSdkImpl.getInstance().updateMedication(
-            id, name, dosage, frequency.toInt(), startDate, endDate, notes
+            id, name, dosage, frequency.toInt(), startHour, startMin, startDate, endDate, notes
         )
+
         Log.d("Medication Edited: ", MedSdkImpl.getInstance().getMedicationById(id).toString())
+
+        MedNotificationService.startReminder(
+            context,
+            MedNotificationService.getNextId(),
+            id,
+            name,
+            dosage,
+            frequency.toInt(),
+            startHour,
+            startMin,
+            startDate,
+            endDate
+        )
     }
 
     private fun startOverviewActivity(context: Context) {
@@ -439,11 +508,11 @@ class EditMedicineActivity : ComponentActivity() {
 
     }
 
-    fun Int.toMonthName(): String {
+    private fun Int.toMonthName(): String {
         return DateFormatSymbols().months[this]
     }
 
-    fun Date.toFormattedString(): String {
+    private fun Date.toFormattedString(): String {
         val simpleDateFormat = SimpleDateFormat("LLLL dd, yyyy", Locale.getDefault())
         return simpleDateFormat.format(this)
     }

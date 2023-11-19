@@ -15,10 +15,10 @@ interface MedSdk {
     fun removeMedication(medication: Medication)
 
     fun updateMedication(
-        id: String, name: String, dosage: String, frequency: Int, startDate: Long, endDate: Long, notes: String
+        id: String, name: String, dosage: String, frequency: Int, startHour: Int, startMinute: Int, startDate: Long, endDate: Long, notes: String
     )
 
-    fun getMedicationById(id: String): Medication
+    fun getMedicationById(id: String): Medication?
     fun getMedicationList(): List<Medication>
     fun getSdkVersion(): String
 }

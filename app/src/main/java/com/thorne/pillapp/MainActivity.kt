@@ -1,9 +1,14 @@
 package com.thorne.pillapp
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -54,6 +59,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import com.thorne.pillapp.ui.dialogues.ConfirmDialog
 import com.thorne.pillapp.ui.medicine.create.CreateMedicineActivity
 import com.thorne.pillapp.ui.medicine.edit.EditMedicineActivity
@@ -78,6 +84,20 @@ class MainActivity : ComponentActivity() {
         // Initialize SDK with application context
         initSdk(this.applicationContext)
 
+        // Check app permissions
+        checkPermissions()
+
+        // Init notification channel
+        val notificationChannel= NotificationChannel(
+            getString(R.string.reminders_notification_channel_id),
+            "Med reminder",
+            NotificationManager.IMPORTANCE_HIGH
+        )
+        val notificationManager=getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(notificationChannel)
+
+
+
         setContent {
             PillAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -100,7 +120,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun PillApp(modifier: Modifier = Modifier) {
         var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
-        var meds = MedSdkImpl.getInstance().getMedicationList()
+        val meds = MedSdkImpl.getInstance().getMedicationList()
 
         Surface(modifier, color = colorScheme.background) {
             if (prefs!!.getBoolean("first_run", true)) {
@@ -143,6 +163,8 @@ class MainActivity : ComponentActivity() {
         intent.putExtra("medName", med.getName())
         intent.putExtra("medDosage", med.getDosage())
         intent.putExtra("medFrequency", med.getFrequency())
+        intent.putExtra("medStartHour", med.getStartHour())
+        intent.putExtra("medStartMin", med.getStartMin())
         intent.putExtra("medStartDate", med.getStartDate())
         intent.putExtra("medEndDate", med.getEndDate())
         intent.putExtra("medNotes", med.getNotes())
@@ -201,6 +223,25 @@ class MainActivity : ComponentActivity() {
                 }
 
                 if (expanded) {
+                    Row {
+                        Text(
+                            text = getString(R.string.medicine_start_time) + ":",
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Normal
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            text = med.getStartHour().toString()+":"+med.getStartMin().toString(),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+
+                    }
+
                     Row {
                         Text(
                             text = getString(R.string.medicine_frequency) + ":",
@@ -364,7 +405,7 @@ class MainActivity : ComponentActivity() {
                             stiffness = Spring.StiffnessLow
                         )
                     )
-                    .size(62.dp)
+                    .size(60.dp)
             ) {
                 Icon(
                     Icons.Filled.Add,
@@ -384,6 +425,36 @@ class MainActivity : ComponentActivity() {
             e.printStackTrace()
         }
         Log.i("MainActivity", "SDK ver: ${medSdk.getSdkVersion()}")
+    }
+
+    private fun checkPermissions(){
+        if (ActivityCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1
+                )
+            }
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.SCHEDULE_EXACT_ALARM,
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.SCHEDULE_EXACT_ALARM),
+                    1
+                )
+            }
+        }
     }
 
     /////////////////////////////

@@ -7,6 +7,8 @@ class MedicationImpl(
     private var name: String,
     private var dosage: String,
     private var frequency: Int,
+    private var startHour: Int,
+    private var startMin: Int,
     private var startDate: Long,
     private var endDate: Long,
     private var notes: String
@@ -27,6 +29,14 @@ class MedicationImpl(
 
     override fun getFrequency(): Int {
         return frequency
+    }
+
+    override fun getStartHour(): Int {
+        return startHour
+    }
+
+    override fun getStartMin(): Int {
+        return startMin
     }
 
     override fun getStartDate(): Long {
@@ -55,6 +65,14 @@ class MedicationImpl(
 
     override fun setFrequency(frequency:  Int) {
         this.frequency = frequency
+    }
+
+    override fun setStartHour(startHour: Int) {
+        this.startHour = startHour
+    }
+
+    override fun setStartMin(startMin: Int) {
+        this.startMin = startMin
     }
 
     override fun setStartDate(startDate: Long) {
