@@ -1,11 +1,9 @@
 package com.thorne.pillapp.ui.medicine.create
 
-import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.DatePicker
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,13 +24,22 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -46,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.thorne.pillapp.MainActivity
 import com.thorne.pillapp.R
 import com.thorne.pillapp.ui.theme.PillAppTheme
+import com.thorne.pillapp.util.reminders.MedNotificationService
 import com.thorne.sdk.MedSdkImpl
 import com.thorne.sdk.meds.MedicationImpl
 import java.text.DateFormatSymbols
@@ -60,7 +69,10 @@ class CreateMedicineActivity : ComponentActivity() {
         setContent {
             PillAppTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    modifier = Modifier.fillMaxHeight()
+                ) {
                     CreateMedicineScreen()
                 }
             }
@@ -68,33 +80,26 @@ class CreateMedicineActivity : ComponentActivity() {
     }
 }
 
-// need back button - main activity
-
-// need to save medicine to storage
-
-// need to load medicine from storage
-
-// need to delete medicine from storage
-
-// need to edit medicine from storage
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateMedicineScreen() {
     var medicineName by rememberSaveable { mutableStateOf("") }
     var medicineDosage by rememberSaveable { mutableStateOf("") }
-    var medicineHourlyFrequency by rememberSaveable { mutableStateOf("1") }
+    var medicineHourlyFrequency by rememberSaveable { mutableStateOf("") }
+    var medicineStartHour by rememberSaveable { mutableIntStateOf(0) }
+    var medicineStartMin by rememberSaveable { mutableIntStateOf(0) }
+    var medicineStartDate by rememberSaveable { mutableLongStateOf(Date().time) }
+    var medicineEndDate by rememberSaveable { mutableLongStateOf(Date().time) }
     var medicineNotes by rememberSaveable { mutableStateOf("") }
-    var medicineEndDate by rememberSaveable { mutableStateOf(Date().time) }
-    var medicineStartDate by rememberSaveable { mutableStateOf(Date().time) }
+    val timePickerState = rememberTimePickerState()
 
     val context = LocalContext.current
-
 
     Column(
         modifier = Modifier
             .padding(16.dp, 16.dp)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
 
@@ -158,13 +163,26 @@ fun CreateMedicineScreen() {
             }
         }
 
+        Spacer(modifier = Modifier.padding(4.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.medicine_start_hour_and_minute),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            TimeInput(
+                state = timePickerState,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
+        CreateStartDateSelection { medicineStartDate = it }
+
         Spacer(modifier = Modifier.padding(8.dp))
 
-        CreateEndDateSelection { medicineEndDate = it}
-
-        Spacer(modifier = Modifier.padding(8.dp))
-
-        CreateStartDateSelection { medicineStartDate = it}
+        CreateEndDateSelection { medicineEndDate = it }
 
         Spacer(modifier = Modifier.padding(8.dp))
 
@@ -195,18 +213,34 @@ fun CreateMedicineScreen() {
                     name = medicineName,
                     dosage = medicineDosage,
                     frequency = medicineHourlyFrequency,
+                    startHour = timePickerState.hour,
+                    startMinute = timePickerState.minute,
                     endDate = medicineEndDate,
                     startDate = medicineStartDate,
                     onInvalidate = {
                         Toast.makeText(
                             context,
-                            context.getString(R.string.value_is_empty, context.getString(it)),
+                            context.getString(R.string.value_is_invalid, context.getString(it)),
                             Toast.LENGTH_LONG
                         ).show()
                     },
                     onValidate = {
+                        // Get values from time picker
+                        medicineStartHour = timePickerState.hour
+                        medicineStartMin = timePickerState.minute
+
                         // DONE! Navigate to next screen / Store medication info
-                        saveMedication(medicineName, medicineDosage, medicineHourlyFrequency, medicineEndDate, medicineStartDate, medicineNotes)
+                        saveMedication(
+                            medicineName,
+                            medicineDosage,
+                            medicineHourlyFrequency,
+                            medicineStartHour,
+                            medicineStartMin,
+                            medicineStartDate,
+                            medicineEndDate,
+                            medicineNotes,
+                            context.applicationContext
+                        )
                         Toast.makeText(
                             context,
                             context.getString(R.string.success),
@@ -231,8 +265,10 @@ private fun validateMedication(
     name: String,
     dosage: String,
     frequency: String,
-    endDate: Long,
+    startHour: Int,
+    startMinute: Int,
     startDate: Long,
+    endDate: Long,
     onInvalidate: (Int) -> Unit,
     onValidate: () -> Unit
 ) {
@@ -246,12 +282,109 @@ private fun validateMedication(
         return
     }
 
+    if (frequency.isEmpty()) {
+        onInvalidate(R.string.medicine_name)
+        return
+    }
+
+    if (startHour > 24 || startHour < 0) {
+        onInvalidate(R.string.medicine_start_hour)
+        return
+    }
+
+    if (startMinute > 60 || startMinute < 0) {
+        onInvalidate(R.string.medicine_start_minute)
+        return
+    }
+
+    if (startDate < 1) {
+        onInvalidate(R.string.medicine_start_date)
+        return
+    }
+
     if (endDate < 1) {
         onInvalidate(R.string.medicine_end_date)
         return
     }
 
+    if (startDate > endDate) {
+        onInvalidate(R.string.medicine_end_date)
+        return
+    }
     onValidate()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreateStartDateSelection(startDate: (Long) -> Unit) {
+
+    Text(
+        text = stringResource(id = R.string.medicine_start_date),
+        style = MaterialTheme.typography.bodyLarge
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
+
+    val currentDate = Date().toFormattedString()
+    var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
+
+    val calendar = Calendar.getInstance()
+    var year: Int
+    var month: Int
+    var day: Int
+    calendar.time = Date()
+
+    var savedDate: Long
+
+    val state = rememberDatePickerState()
+    val openDialog = remember { mutableStateOf(false) }
+
+    if (isPressed) {
+        openDialog.value = true
+    }
+    if (openDialog.value) {
+        DatePickerDialog(colors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background,
+            headlineContentColor = MaterialTheme.colorScheme.primary,
+            weekdayContentColor = MaterialTheme.colorScheme.secondaryContainer
+        ), onDismissRequest = {
+            openDialog.value = false
+        }, confirmButton = {
+            TextButton(onClick = {
+                if (state.selectedDateMillis != null) {
+                    startDate(state.selectedDateMillis!!)
+                    savedDate = state.selectedDateMillis!!
+                    calendar.time = Date(savedDate)
+                    year = calendar.get(Calendar.YEAR)
+                    month = calendar.get(Calendar.MONTH)
+                    day = calendar.get(Calendar.DAY_OF_MONTH)
+                    selectedDate = "${month.toMonthName()} $day, $year"
+                    openDialog.value = false
+                }
+            }) {
+                Text("OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = {
+                openDialog.value = false
+            }) {
+                Text("CANCEL")
+            }
+        }) {
+            DatePicker(
+                state = state
+            )
+        }
+    }
+
+    TextField(
+        readOnly = true,
+        value = selectedDate,
+        onValueChange = {},
+        trailingIcon = { Icons.Default.DateRange },
+        interactionSource = interactionSource
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -268,84 +401,102 @@ fun CreateEndDateSelection(endDate: (Long) -> Unit) {
     val currentDate = Date().toFormattedString()
     var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
 
-    val context = LocalContext.current
 
     val calendar = Calendar.getInstance()
-    val year: Int = calendar.get(Calendar.YEAR)
-    val month: Int = calendar.get(Calendar.MONTH)
-    val day: Int = calendar.get(Calendar.DAY_OF_MONTH)
+    var year: Int
+    var month: Int
+    var day: Int
     calendar.time = Date()
 
-    val datePickerDialog =
-        DatePickerDialog(context, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val newDate = Calendar.getInstance()
-            newDate.set(year, month, dayOfMonth)
-            selectedDate = "${month.toMonthName()} $dayOfMonth, $year"
-            endDate(newDate.timeInMillis)
-        }, year, month, day)
+    var savedDate: Long = 0
+
+    val state = rememberDatePickerState()
+    val openDialog = remember { mutableStateOf(false) }
+
+    if (isPressed) {
+        openDialog.value = true
+    }
+    if (openDialog.value) {
+        DatePickerDialog(colors = DatePickerDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background,
+            headlineContentColor = MaterialTheme.colorScheme.primary,
+            weekdayContentColor = MaterialTheme.colorScheme.secondaryContainer
+        ), onDismissRequest = {
+            openDialog.value = false
+        }, confirmButton = {
+            TextButton(onClick = {
+                if (state.selectedDateMillis != null) {
+                    endDate(state.selectedDateMillis!!)
+                    savedDate = state.selectedDateMillis!!
+                    calendar.time = Date(savedDate)
+                    year = calendar.get(Calendar.YEAR)
+                    month = calendar.get(Calendar.MONTH)
+                    day = calendar.get(Calendar.DAY_OF_MONTH)
+                    selectedDate = "${month.toMonthName()} $day, $year"
+                    openDialog.value = false
+                }
+            }) {
+                Text("OK")
+            }
+        }, dismissButton = {
+            TextButton(onClick = {
+                openDialog.value = false
+            }) {
+                Text("CANCEL")
+            }
+        }) {
+            DatePicker(
+                state = state
+            )
+        }
+    }
 
     TextField(
-        modifier = Modifier.fillMaxWidth(),
         readOnly = true,
         value = selectedDate,
         onValueChange = {},
         trailingIcon = { Icons.Default.DateRange },
         interactionSource = interactionSource
     )
-
-    if (isPressed) {
-        datePickerDialog.show()
-    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateStartDateSelection(startDate: (Long) -> Unit) {
-    Text(
-        text = stringResource(id = R.string.medicine_start_date),
-        style = MaterialTheme.typography.bodyLarge
+fun saveMedication(
+    name: String,
+    dosage: String,
+    frequency: String,
+    startHour: Int,
+    startMinute: Int,
+    startDate: Long,
+    endDate: Long,
+    notes: String,
+    context: Context
+) {
+    val med = MedicationImpl(
+        name,
+        dosage,
+        frequency.toInt(),
+        startHour,
+        startMinute,
+        startDate,
+        endDate,
+        notes
     )
-
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed: Boolean by interactionSource.collectIsPressedAsState()
-
-    val currentDate = Date().toFormattedString()
-    var selectedDate by rememberSaveable { mutableStateOf(currentDate) }
-
-    val context = LocalContext.current
-
-    val calendar = Calendar.getInstance()
-    val year: Int = calendar.get(Calendar.YEAR)
-    val month: Int = calendar.get(Calendar.MONTH)
-    val day: Int = calendar.get(Calendar.DAY_OF_MONTH)
-    calendar.time = Date()
-
-    val datePickerDialog =
-        DatePickerDialog(context, { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-            val newDate = Calendar.getInstance()
-            newDate.set(year, month, dayOfMonth)
-            selectedDate = "${month.toMonthName()} $dayOfMonth, $year"
-            startDate(newDate.timeInMillis)
-        }, year, month, day)
-
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        readOnly = true,
-        value = selectedDate,
-        onValueChange = {},
-        trailingIcon = { Icons.Default.DateRange },
-        interactionSource = interactionSource
-    )
-
-    if (isPressed) {
-        datePickerDialog.show()
-    }
-}
-
-fun saveMedication(name: String, dosage: String, frequency: String, endDate: Long, startDate: Long, notes: String){
-    val med = MedicationImpl(name, dosage, frequency.toInt(), startDate, endDate, notes)
     MedSdkImpl.getInstance().addMedication(med)
+
     Log.d("Medication", MedSdkImpl.getInstance().getMedicationList().toString())
+
+    MedNotificationService.startReminder(
+        context,
+        MedNotificationService.getNextId(),
+        med.getId(),
+        name,
+        dosage,
+        frequency.toInt(),
+        startHour,
+        startMinute,
+        startDate,
+        endDate
+    )
 }
 
 fun startOverviewActivity(context: Context) {

@@ -9,7 +9,15 @@
     <string name="medicine_end_date">End Date</string>
     <string name="medicine_start_date">Start Date</string>
     <string name="success">Success!</string>
-    <string name="value_is_empty">Value %s is empty!</string>
+    <string name="value_is_invalid">Value %s is invalid!</string>
     <string name="save">Save</string>
     <string name="medicine_notes">Notes</string>
+    <string name="dialog_deletion_title">Confirm Deletion</string>
+    <string name="dialog_deletion_text">Are you sure you want to delete this medication?</string>
+    <string name="edit_medication">Edit Medication</string>
+    <string name="reminders_notification_channel_id">med_notification</string>
+    <string name="medicine_start_time">Starts at</string>
+    <string name="medicine_start_hour">Start Hour</string>
+    <string name="medicine_start_minute">Start Minute</string>
+    <string name="medicine_start_hour_and_minute">Starting Hour and Minute</string>
 </resources>

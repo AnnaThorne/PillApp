@@ -58,15 +58,42 @@ class MedSdkImpl private constructor() : MedSdk {
         updateStorage()
     }
 
+    override fun updateMedication(
+        id: String,
+        name: String,
+        dosage: String,
+        frequency: Int,
+        startHour: Int,
+        startMinute: Int,
+        startDate: Long,
+        endDate: Long,
+        notes: String
+    ) {
+        assertInitialized()
+        medicationList.forEach {
+            if (it.getId() == id) {
+                it.setName(name)
+                it.setDosage(dosage)
+                it.setFrequency(frequency)
+                it.setStartHour(startHour)
+                it.setStartMin(startMinute)
+                it.setStartDate(startDate)
+                it.setEndDate(endDate)
+                it.setNotes(notes)
+            }
+        }
+        updateStorage()
+    }
+
     override fun removeMedication(id: String) {
         assertInitialized()
         medicationList.removeIf { it.getId() == id }
         updateStorage()
     }
 
-    override fun getMedicationById(id: String): Medication {
+    override fun getMedicationById(id: String): Medication? {
         assertInitialized()
-        return medicationList.find { it.getId() == id }!!
+        return medicationList.find { it.getId() == id }
     }
 
     override fun getMedicationList(): ArrayList<Medication> {
