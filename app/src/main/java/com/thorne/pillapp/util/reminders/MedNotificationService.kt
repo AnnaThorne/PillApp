@@ -25,7 +25,6 @@ object MedNotificationService {
     ) {
         val alarmManager =
             applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
         val intent =
             Intent(
                 applicationContext.applicationContext,
@@ -47,6 +46,7 @@ object MedNotificationService {
                     PendingIntent.FLAG_MUTABLE
                 )
             }
+        alarmManager.cancel(intent)
 
         val calendar: Calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, medStartHour)
