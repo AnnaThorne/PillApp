@@ -54,11 +54,11 @@ object MedNotificationService {
         }
 
         // Sanity check for if the time has already passed today
-        if (Calendar.getInstance()
-                .apply { add(Calendar.MINUTE, 1) }.timeInMillis - calendar.timeInMillis > 0
-        ) {
-            calendar.add(Calendar.DATE, 1)
-        }
+       // if (Calendar.getInstance()
+       //         .apply { add(Calendar.MINUTE, 1) }.timeInMillis - calendar.timeInMillis > 0
+       // ) {
+      //      calendar.add(Calendar.DATE, 1)
+       // }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (

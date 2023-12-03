@@ -125,8 +125,8 @@ class NotificationReceiver : BroadcastReceiver() {
         val med = MedSdkImpl.getInstance().getMedicationById(medId)
 
         if (med!!.getId() == medId && med.getName() == medName && med.getDosage() == medDosage && med.getFrequency() == medFrequency && med.getStartHour() == medStartHour && med.getStartMin() == medStartMinute && med.getStartDate() == medStartDate && med.getEndDate() == medEndDate) {
-            return true
+            return false
         }
-        return false
+        return true
     }
 }
