@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Build
+import android.util.Log
 import kotlin.random.Random
 
 object MedNotificationService {
@@ -23,14 +24,15 @@ object MedNotificationService {
         medStartDate: Long,
         medEndDate: Long,
     ) {
+    println("MedNotificationService.startReminder()")
         val alarmManager =
             applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
         val intent =
             Intent(
                 applicationContext.applicationContext,
                 NotificationReceiver::class.java
             ).let { intent ->
+                intent.action = Actions.NOTIFICATION.name
                 intent.putExtra("medId", medId)
                 intent.putExtra("medName", medName)
                 intent.putExtra("medDosage", medDosage)
@@ -40,6 +42,7 @@ object MedNotificationService {
                 intent.putExtra("medStartDate", medStartDate)
                 intent.putExtra("medEndDate", medEndDate)
                 intent.putExtra("reminderId", reminderId)
+//                applicationContext.sendBroadcast(intent)
                 PendingIntent.getBroadcast(
                     applicationContext.applicationContext,
                     reminderId,
@@ -52,24 +55,20 @@ object MedNotificationService {
             set(Calendar.HOUR_OF_DAY, medStartHour)
             set(Calendar.MINUTE, medStartMin)
         }
-
-        // Sanity check for if the time has already passed today
-        if (Calendar.getInstance()
-                .apply { add(Calendar.MINUTE, 1) }.timeInMillis - calendar.timeInMillis > 0
-        ) {
-            calendar.add(Calendar.DATE, 1)
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (
                 alarmManager.canScheduleExactAlarms()
             ) {
-                alarmManager.setRepeating(
+                alarmManager.setInexactRepeating (
                     AlarmManager.RTC_WAKEUP,
                     calendar.timeInMillis,
-                    medFrequency.toLong() * 3600000,
+                    medFrequency.toLong() * AlarmManager.INTERVAL_HOUR,
                     intent
                 )
+            }
+                Log.i("MedNotifs", "Alarm starting at ${calendar.timeInMillis}, repeating every ${medFrequency.toLong() * AlarmManager.INTERVAL_HOUR} milliseconds")
+            if (alarmManager.nextAlarmClock.triggerTime > 0) {
+                Log.d("MedNotifs", "Next alarm is scheduled for ${alarmManager.nextAlarmClock.triggerTime}")
             }
         }
     }
@@ -78,6 +77,7 @@ object MedNotificationService {
         applicationContext: Context,
         reminderId: Int = notificationCode
     ) {
+        Log.i("MedNotifs", "stopReminder()")
         val alarmManager =
             applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(applicationContext, NotificationReceiver::class.java).let { intent ->
