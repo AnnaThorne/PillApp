@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 
 class ConfirmDialog {
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun ShowConfirmationDialog(
         onDismissRequest: () -> Unit,

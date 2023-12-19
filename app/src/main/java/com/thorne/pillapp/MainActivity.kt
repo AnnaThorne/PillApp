@@ -96,8 +96,6 @@ class MainActivity : ComponentActivity() {
         val notificationManager=getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(notificationChannel)
 
-
-
         setContent {
             PillAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -171,7 +169,6 @@ class MainActivity : ComponentActivity() {
         context.startActivity(intent)
     }
 
-    //TODO Add a edit button and stuff
     @Composable
     private fun CardContent(
         med: Medication, onDeleteClick: (Medication) -> Unit, context: Context
