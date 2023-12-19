@@ -4,6 +4,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("release") {
+            storePassword = rootProject.extra.get("keystorePassword").toString()
+            keyPassword =  rootProject.extra.get("keyPassword").toString()
+            keyAlias = rootProject.extra.get("keyAlias").toString()
+            storeFile = file( rootProject.extra.get("keystorePath").toString())
+        }
+    }
     namespace = "com.thorne.pillapp"
     compileSdk = 34 // Android 14
 
@@ -27,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
