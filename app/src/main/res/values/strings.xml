@@ -20,4 +20,6 @@
     <string name="medicine_start_hour">Start Hour</string>
     <string name="medicine_start_minute">Start Minute</string>
     <string name="medicine_start_hour_and_minute">Starting Hour and Minute</string>
+    <string name="add_medication_hint">Click the + button to add your first item!</string>
+    <string name="arrow_down_content_description">arrow pointing down\n</string>
 </resources>
