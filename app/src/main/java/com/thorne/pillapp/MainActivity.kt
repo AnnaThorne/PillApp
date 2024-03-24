@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -117,20 +118,35 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun PillApp(modifier: Modifier = Modifier) {
+        // Variables to hold the state of the onboarding
+        // and the list of medications
         var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
         val meds = MedSdkImpl.getInstance().getMedicationList()
 
         Surface(modifier, color = colorScheme.background) {
+
+            // Check if this is the first run
             if (prefs!!.getBoolean("first_run", true)) {
                 shouldShowOnboarding = true
                 prefs!!.edit().putBoolean("first_run", false).apply()
             } else {
                 shouldShowOnboarding = false
             }
+
+            // Show onboarding screen
             if (shouldShowOnboarding) {
                 OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
             } else {
+
+                // Show list of medications
                 PillCards(modifier = modifier, meds = meds)
+
+                // Show hint to add medication if list is empty
+                if(meds.isEmpty()){
+                    showHintForAddingMeds()
+                }
+
+                // Add medication button
                 val context = LocalContext.current
                 AddMedicationButton {
                     startCreateMedicineActivity(context)
@@ -139,6 +155,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Medication card
     @Composable
     private fun PillCard(med: Medication, onDeleteClick: (Medication) -> Unit) {
         Card(
@@ -169,6 +186,7 @@ class MainActivity : ComponentActivity() {
         context.startActivity(intent)
     }
 
+    // Medication card content
     @Composable
     private fun CardContent(
         med: Medication, onDeleteClick: (Medication) -> Unit, context: Context
@@ -340,7 +358,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
+    // List of medications
     @Composable
     private fun PillCards(
         modifier: Modifier = Modifier, meds: List<Medication> = emptyList()
@@ -362,6 +380,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Onboarding screen
     @Composable
     fun OnboardingScreen(
         onContinueClicked: () -> Unit, modifier: Modifier = Modifier
@@ -380,6 +399,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Add medication button
     @Composable
     private fun AddMedicationButton(onClick: () -> Unit) {
         Column(
@@ -413,6 +433,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Initialize SDK
     private fun initSdk(context: Context) {
         val medSdk = MedSdkImpl.getInstance()
         try {
@@ -424,6 +445,7 @@ class MainActivity : ComponentActivity() {
         Log.i("MainActivity", "SDK ver: ${medSdk.getSdkVersion()}")
     }
 
+    // Check permissions
     private fun checkPermissions(){
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
@@ -454,7 +476,39 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /////////////////////////////
+@Composable
+private fun showHintForAddingMeds(){
+    Row (
+        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(12.dp)
+                .fillMaxHeight()
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.add_medication_hint),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(12.dp)
+            )
+            Icon(
+                Icons.Rounded.ArrowDownward,
+                contentDescription = stringResource(id = R.string.arrow_down_content_description),
+            )
+        }
+    }
+}
+
+/////////////////////////////
 // Previews
 /////////////////////////////
     @Preview(showBackground = true, widthDp = 320)

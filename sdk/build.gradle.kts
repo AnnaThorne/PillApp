@@ -37,6 +37,8 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    useLibrary("android.test.mock")
 }
 
 dependencies {
@@ -45,4 +47,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("io.mockk:mockk:1.12.0")
+    testImplementation("androidx.test:core:1.5.0")
 }
