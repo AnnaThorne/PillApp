@@ -12,7 +12,7 @@ class MedSdkImpl private constructor() : MedSdk {
     companion object {
         // Private reference to the singleton instance
 
-        // Suppress warning because we're only ever storing application context
+        // Suppress warning because we're only ever keeping application context,
         // which doesn't change, so we're not creating a memory leak
         @SuppressLint("StaticFieldLeak")
 
@@ -20,8 +20,14 @@ class MedSdkImpl private constructor() : MedSdk {
         private var INSTANCE: MedSdkImpl? = null
 
         private var isInitialized = false
+
+        // Buffer for storage - in-memory storage,
+        // loaded from disk on initialization
+        // and saved to disk on any changes
         private var medicationList = ArrayList<Medication>()
-        private val storageManager = MedicationStorageManagerImpl()
+
+        // Storage manager
+        private var storageManager = MedicationStorageManagerImpl()
 
         // Function to get or create the singleton instance
         fun getInstance(): MedSdkImpl {
@@ -103,7 +109,7 @@ class MedSdkImpl private constructor() : MedSdk {
 
     override fun getSdkVersion(): String {
         assertInitialized()
-        return "1.0.0"
+        return "1.0.1"
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -123,5 +129,9 @@ class MedSdkImpl private constructor() : MedSdk {
         if (!storageManager.isEmpty(context!!)) {
             medicationList = storageManager.loadFromStorage(context!!)
         }
+    }
+
+    internal fun setCustomStorageManager(customStorageManager: MedicationStorageManagerImpl) {
+        storageManager = customStorageManager
     }
 }

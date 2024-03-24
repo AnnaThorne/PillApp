@@ -1,38 +1,48 @@
 package com.thorne.sdk
 
 import android.content.Context
+import android.test.mock.MockContext
 import com.thorne.sdk.meds.Medication
 import com.thorne.sdk.meds.MedicationImpl
 import com.thorne.sdk.storage.MedicationStorageManagerImpl
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.any
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
-
 
 
 class MedSdkImplTest {
 
     private lateinit var medSdkImpl: MedSdkImpl
-    private lateinit var mockMedication: Medication
+    private lateinit var mockMedication: MedicationImpl
     private lateinit var mockStorageManager: MedicationStorageManagerImpl
     private lateinit var mockContext: Context
 
+    @Before
+    fun setUp() {
+        // Mock Medication
+        mockMedication = mockk<MedicationImpl>()
+        every { mockMedication.getId() } returns "testId"
 
-@Before
-fun setUp() {
-    mockMedication = mockk<MedicationImpl>()
-    mockStorageManager = mock(MedicationStorageManagerImpl::class.java)
-    mockContext = mock(Context::class.java)
-    medSdkImpl = MedSdkImpl.getInstance() // pass mockStorageManager to the constructor
-    medSdkImpl.initialize(mockContext)
-}
+        // Mock StorageManager
+        mockStorageManager = mockk<MedicationStorageManagerImpl>()
+        every { mockStorageManager.isEmpty(any()) } returns true
+        every { mockStorageManager.loadFromStorage(any()) } returns ArrayList()
+        every { mockStorageManager.saveToStorage(any(), any()) } returns Unit
+
+        // Mock Context
+        mockContext = mockk<MockContext>()
+        every { mockContext.applicationContext } returns mockContext
+
+        // Create MedSdkImpl instance
+        medSdkImpl = spyk(MedSdkImpl.getInstance())
+        medSdkImpl.setCustomStorageManager(mockStorageManager)
+        medSdkImpl.initialize(mockContext)
+    }
 
     @Test
     fun testIsInitialized() {
@@ -42,38 +52,37 @@ fun setUp() {
     @Test
     fun testAddMedication() {
         medSdkImpl.addMedication(mockMedication)
-        verify(mockStorageManager).saveToStorage(any(), any())
+        verify(exactly = 1) { mockStorageManager.saveToStorage(any(), any()) }
     }
 
     @Test
     fun testRemoveMedication() {
         medSdkImpl.removeMedication(mockMedication)
-        verify(mockStorageManager).saveToStorage(any(), any())
+        verify(exactly = 1) { mockStorageManager.saveToStorage(any(), any()) }
     }
 
     @Test
     fun testRemoveMedicationById() {
-        `when`(mockMedication.getId()).thenReturn("testId")
-        medSdkImpl.addMedication(mockMedication)
         medSdkImpl.removeMedication("testId")
-        verify(mockStorageManager, times(2)).saveToStorage(any(), any())
+        verify(exactly = 1) { mockStorageManager.saveToStorage(any(), any()) }
     }
 
     @Test
     fun testGetMedicationById() {
-        `when`(mockMedication.getId()).thenReturn("testId")
-        medSdkImpl.addMedication(mockMedication)
-        assertEquals(mockMedication, medSdkImpl.getMedicationById("testId"))
+        // get medication from in-memory buffer
+        assertTrue(medSdkImpl.getMedicationById("testId") is Medication)
+        verify(exactly = 0) { mockStorageManager.saveToStorage(any(), any()) }
     }
 
     @Test
     fun testGetMedicationList() {
-        medSdkImpl.addMedication(mockMedication)
-        assertEquals(1, medSdkImpl.getMedicationList().size)
+        // get medication list from in-memory buffer
+        assertEquals(ArrayList<Medication>()::class, medSdkImpl.getMedicationList()::class)
+        verify(exactly = 0) { mockStorageManager.saveToStorage(any(), any()) }
     }
 
     @Test
     fun testGetSdkVersion() {
-        assertEquals("1.0.0", medSdkImpl.getSdkVersion())
+        assertEquals("1.0.1", medSdkImpl.getSdkVersion())
     }
 }

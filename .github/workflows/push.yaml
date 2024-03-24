@@ -1,4 +1,4 @@
-name: Push
+name: Build
 
 on:
   push:
@@ -9,13 +9,13 @@ on:
 
 jobs:
   debug:
-    name: Build Debug
+    name: Build Apk
     runs-on: ubuntu-latest
     steps:
-      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event"
       - run: echo "This job is running on a ${{ runner.os }} server hosted by GitHub!"
       - uses: actions/checkout@v3
-      - run: echo "The ${{ github.repository }} repository has been cloned."
+      - run: echo "The ${{ github.repository }} repository has been cloned"
       - run: echo "Setting up JDK"
       - name: set up JDK 17
         uses: actions/setup-java@v3
@@ -25,7 +25,18 @@ jobs:
           cache: gradle
       - run: java --version
       - run: env
-      - run: echo "Ready to build."
+      - run: echo "JDK 17 has been set up"
+      - name: Set up keystore
+        run: |
+          echo "${{ secrets.PILLAPP_KEYSTORE }}" > app/keystore.jks.asc
+          gpg -d --passphrase "${{ secrets.STORE_DECRYPT_KEY }}" --batch app/keystore.jks.asc > app/keystore.jks
+      - run: echo "Keystore has been set up"
+      - name: Set up local.properties
+        run: |
+          echo "${{ secrets.LOCAL_PROPERTIES }}" > local.properties.asc
+          gpg -d --passphrase "${{ secrets.STORE_DECRYPT_KEY }}" --batch local.properties.asc > local.properties
+      - run: echo "local.properties has been set up"
+      - run: echo "Ready to build"
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - run: echo "Building Debug APK."
@@ -35,11 +46,11 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: PillApp-${{ github.run_number }}.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
       - uses: actions/upload-artifact@v3
         with:
           name: PillApp-${{ github.run_number }}.apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/*.apk
 
 
   build:
@@ -53,6 +64,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+      - name: Set up keystore
+        run: |
+          echo "${{ secrets.PILLAPP_KEYSTORE }}" > app/keystore.jks.asc
+          gpg -d --passphrase "${{ secrets.STORE_DECRYPT_KEY }}" --batch app/keystore.jks.asc > app/keystore.jks
+      - run: echo "Keystore has been set up"
+      - name: Set up local.properties
+        run: |
+          echo "${{ secrets.LOCAL_PROPERTIES }}" > local.properties.asc
+          gpg -d --passphrase "${{ secrets.STORE_DECRYPT_KEY }}" --batch local.properties.asc > local.properties
+      - run: echo "local.properties has been set up"
       - run: chmod +x gradlew
       - name: Bundle 'release' with Gradle
         run: ./gradlew assembleRelease
@@ -69,5 +90,5 @@ jobs:
       - name: Upload App Bundle
         uses: actions/upload-artifact@v1
         with:
-          name: PillApp.aab
+          name: PillApp-${{ github.run_number }}.aab
           path: ${{steps.sign_aab.outputs.signedReleaseFile}}
