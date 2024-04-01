@@ -19,8 +19,8 @@ android {
         applicationId = "com.thorne.pillapp"
         minSdk = 29  // Android 10
         targetSdk = 34 // Android 14
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 100002
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

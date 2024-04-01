@@ -83,6 +83,6 @@ class MedSdkImplTest {
 
     @Test
     fun testGetSdkVersion() {
-        assertEquals("1.0.1", medSdkImpl.getSdkVersion())
+        assertEquals("1.0.2", medSdkImpl.getSdkVersion())
     }
 }
