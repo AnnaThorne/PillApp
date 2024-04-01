@@ -109,7 +109,6 @@ class MainActivity : ComponentActivity() {
         Log.i("MainActivity", "onActivityReenter")
         setContent {
             PillAppTheme {
-                // A surface container using the 'background' color from the theme
                 PillApp()
             }
         }
