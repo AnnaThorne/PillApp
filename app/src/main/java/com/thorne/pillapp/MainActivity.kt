@@ -89,12 +89,12 @@ class MainActivity : ComponentActivity() {
         checkPermissions()
 
         // Init notification channel
-        val notificationChannel= NotificationChannel(
+        val notificationChannel = NotificationChannel(
             getString(R.string.reminders_notification_channel_id),
             "Med reminder",
             NotificationManager.IMPORTANCE_HIGH
         )
-        val notificationManager=getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(notificationChannel)
 
         setContent {
@@ -142,7 +142,7 @@ class MainActivity : ComponentActivity() {
                 PillCards(modifier = modifier, meds = meds)
 
                 // Show hint to add medication if list is empty
-                if(meds.isEmpty()){
+                if (meds.isEmpty()) {
                     showHintForAddingMeds()
                 }
 
@@ -248,7 +248,8 @@ class MainActivity : ComponentActivity() {
                         )
 
                         Text(
-                            text = med.getStartHour().toString()+":"+med.getStartMin().toString(),
+                            text = med.getStartHour().toString() + ":" + med.getStartMin()
+                                .toString(),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold
                             ),
@@ -446,7 +447,7 @@ class MainActivity : ComponentActivity() {
     }
 
     // Check permissions
-    private fun checkPermissions(){
+    private fun checkPermissions() {
         if (ActivityCompat.checkSelfPermission(
                 applicationContext,
                 Manifest.permission.POST_NOTIFICATIONS,
@@ -476,39 +477,41 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-@Composable
-private fun showHintForAddingMeds(){
-    Row (
-        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Column(
+    @Composable
+    private fun showHintForAddingMeds() {
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .padding(12.dp)
-                .fillMaxHeight()
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = stringResource(R.string.add_medication_hint),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(12.dp)
-            )
-            Icon(
-                Icons.Rounded.ArrowDownward,
-                contentDescription = stringResource(id = R.string.arrow_down_content_description),
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(12.dp)
+                    .fillMaxHeight()
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.add_medication_hint),
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(12.dp)
+                )
+                Icon(
+                    Icons.Rounded.ArrowDownward,
+                    contentDescription = stringResource(id = R.string.arrow_down_content_description),
+                )
+            }
         }
     }
-}
 
-/////////////////////////////
+    /////////////////////////////
 // Previews
 /////////////////////////////
     @Preview(showBackground = true, widthDp = 320)
