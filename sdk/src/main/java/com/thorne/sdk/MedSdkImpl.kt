@@ -22,7 +22,7 @@ class MedSdkImpl private constructor() : MedSdk {
 
         private var isInitialized = false
 
-        // Buffer for storage - in-memory storage,
+        // In-memory storage buffer,
         // loaded from disk on initialization
         // and saved to disk on any changes
         private var medicationList = ArrayList<Medication>()
