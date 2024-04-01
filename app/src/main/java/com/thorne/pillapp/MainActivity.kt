@@ -142,7 +142,7 @@ class MainActivity : ComponentActivity() {
 
                 // Show hint to add medication if list is empty
                 if (meds.isEmpty()) {
-                    showHintForAddingMeds()
+                    ShowHintForAddingMeds()
                 }
 
                 // Add medication button
@@ -276,7 +276,7 @@ class MainActivity : ComponentActivity() {
 
                     }
 
-                    Row {
+                    Column {
                         Text(
                             text = getString(R.string.medicine_notes) + ":",
                             style = MaterialTheme.typography.bodyLarge.copy(
@@ -288,7 +288,7 @@ class MainActivity : ComponentActivity() {
                         Text(
                             text = med.getNotes(), style = MaterialTheme.typography.bodyLarge.copy(
                                 fontWeight = FontWeight.Bold
-                            ), textAlign = TextAlign.Center
+                            ), textAlign = TextAlign.Left
                         )
 
                     }
@@ -477,7 +477,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun showHintForAddingMeds() {
+    private fun ShowHintForAddingMeds() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
