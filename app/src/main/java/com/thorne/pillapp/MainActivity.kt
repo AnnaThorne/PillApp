@@ -99,7 +99,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             PillAppTheme {
-                // A surface container using the 'background' color from the theme
                 PillApp()
             }
         }
@@ -123,6 +122,7 @@ class MainActivity : ComponentActivity() {
         var shouldShowOnboarding by rememberSaveable { mutableStateOf(true) }
         val meds = MedSdkImpl.getInstance().getMedicationList()
 
+        // Surface container using the 'background' color from the theme
         Surface(modifier, color = colorScheme.background) {
 
             // Check if this is the first run
@@ -511,7 +511,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /////////////////////////////
+/////////////////////////////
 // Previews
 /////////////////////////////
     @Preview(showBackground = true, widthDp = 320)
