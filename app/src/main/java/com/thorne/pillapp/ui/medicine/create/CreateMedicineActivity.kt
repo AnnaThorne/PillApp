@@ -30,6 +30,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -162,7 +163,38 @@ class CreateMedicineActivity : ComponentActivity() {
                 }
             }
 
-            Spacer(modifier = Modifier.padding(4.dp))
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            var limitByDate by rememberSaveable { mutableStateOf(false) }
+            // Optional limit by date
+            // TODO: refactor this and do it properly
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = stringResource(id = R.string.limit_by_date),
+                    style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = limitByDate,
+                    onCheckedChange = {
+                        limitByDate = it
+                    }
+                )
+            }
+            if(limitByDate) {
+                CreateStartDateSelection { medicineStartDate = it }
+
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                CreateEndDateSelection { medicineEndDate = it }
+            } else {
+                medicineStartDate = System.currentTimeMillis()
+                val calendar = Calendar.getInstance()
+                calendar.set(3000, 1,1)
+                medicineEndDate = calendar.timeInMillis
+            }
+
+            Spacer(modifier = Modifier.padding(8.dp))
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -176,12 +208,6 @@ class CreateMedicineActivity : ComponentActivity() {
                     modifier = Modifier.padding(8.dp)
                 )
             }
-
-            CreateStartDateSelection { medicineStartDate = it }
-
-            Spacer(modifier = Modifier.padding(8.dp))
-
-            CreateEndDateSelection { medicineEndDate = it }
 
             Spacer(modifier = Modifier.padding(8.dp))
 
