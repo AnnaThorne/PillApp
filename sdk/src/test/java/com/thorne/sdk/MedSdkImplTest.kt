@@ -7,6 +7,7 @@ import com.thorne.sdk.meds.MedicationImpl
 import com.thorne.sdk.storage.MedicationStorageManagerImpl
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
@@ -51,8 +52,19 @@ class MedSdkImplTest {
 
     @Test
     fun testAddMedication() {
+        // GIVEN
+        // SDK is initialized
+        assertTrue(medSdkImpl.isInitialized())
+
+        // WHEN
+        // new medication is added
         medSdkImpl.addMedication(mockMedication)
-        verify(exactly = 1) { mockStorageManager.saveToStorage(any(), any()) }
+
+        // THEN
+        // medication shall be saved to storage
+        val argCapture = slot<ArrayList<Medication>>()
+        verify(exactly = 1) { mockStorageManager.saveToStorage(any(),capture(argCapture) )}
+        assertTrue(argCapture.captured.contains(mockMedication))
     }
 
     @Test
