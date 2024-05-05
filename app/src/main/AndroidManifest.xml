@@ -17,14 +17,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PillApp"
         tools:targetApi="34">
-        <receiver android:name=".util.reminders.BootReceiver"
+        <receiver android:name="cz.thorne.pillapp.util.reminders.BootReceiver"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
-        <receiver android:name=".util.reminders.NotificationReceiver"
+        <receiver android:name="cz.thorne.pillapp.util.reminders.NotificationReceiver"
             android:exported="true"
             android:enabled="true"
             android:permission="TODO">
@@ -34,7 +34,7 @@
         </receiver>
 
         <activity
-            android:name=".MainActivity"
+            android:name="cz.thorne.pillapp.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.PillApp">
             <intent-filter>
@@ -44,7 +44,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.medicine.create.CreateMedicineActivity"
+            android:name="cz.thorne.pillapp.ui.medicine.create.CreateMedicineActivity"
             android:exported="true"
             android:theme="@style/Theme.PillApp">
             <intent-filter>
@@ -52,7 +52,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.medicine.edit.EditMedicineActivity"
+            android:name="cz.thorne.pillapp.ui.medicine.edit.EditMedicineActivity"
             android:exported="true"
             android:theme="@style/Theme.PillApp">
             <intent-filter>
