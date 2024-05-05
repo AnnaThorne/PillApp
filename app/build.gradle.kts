@@ -12,11 +12,11 @@ android {
             storeFile = file( rootProject.extra.get("keystorePath").toString())
         }
     }
-    namespace = "com.thorne.pillapp"
+    namespace = "cz.thorne.pillapp"
     compileSdk = 34 // Android 14
 
     defaultConfig {
-        applicationId = "com.thorne.pillapp"
+        applicationId = "cz.thorne.pillapp"
         minSdk = 29  // Android 10
         targetSdk = 34 // Android 14
         versionCode = 100002

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.thorne.sdk"
+    namespace = "cz.thorne.sdk"
     compileSdk = 34 // Android 14
 
     defaultConfig {
