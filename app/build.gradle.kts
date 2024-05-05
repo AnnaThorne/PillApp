@@ -12,15 +12,15 @@ android {
             storeFile = file( rootProject.extra.get("keystorePath").toString())
         }
     }
-    namespace = "com.thorne.pillapp"
+    namespace = "cz.thorne.pillapp"
     compileSdk = 34 // Android 14
 
     defaultConfig {
-        applicationId = "com.thorne.pillapp"
+        applicationId = "cz.thorne.pillapp"
         minSdk = 29  // Android 10
         targetSdk = 34 // Android 14
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 100002
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

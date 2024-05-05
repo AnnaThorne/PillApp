@@ -1,0 +1,15 @@
+# Sample configuration of local.properties
+# Rename this file to local.properties and update the values to match your local configuration
+
+# Path to Android SDK
+sdk.dir=<my_path_to_android_sdk>
+
+# Signing Keystore
+# Keystore password
+keystore.password=<my_keystore_password>
+# Key password
+key.password=<my_key_password>
+# Key alias
+key.alias=<my_key_alias>
+# Keystore path
+keystore.path=<my_keystore_path>
