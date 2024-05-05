@@ -37,9 +37,19 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-
     useLibrary("android.test.mock")
 }
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlinx:kover-gradle-plugin:0.7.6")
+    }
+}
+
+apply(plugin = "org.jetbrains.kotlinx.kover")
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
